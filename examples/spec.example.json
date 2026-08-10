@@ -1,0 +1,18 @@
+{
+  "style": "bold-orange",
+  "lang": "ru",
+  "fps": 30,
+  "video": "main.mp4",
+  "background": "bg.png",
+  "brand": { "badge": "GTH" },
+  "scenes": [
+    { "type": "hook", "dur": 70, "title": "ЗАГОЛОВОК", "subtitle": "ПОДЗАГОЛОВОК" },
+    {
+      "type": "speaker",
+      "dur": 600,
+      "zooms": [[0, 1.05], [8, 1.12]],
+      "punches": [{ "at": 8, "dur": 60, "line1": "ключевая", "line2": "мысль" }]
+    },
+    { "type": "cta", "dur": 90, "line1": "ПОДПИШИСЬ", "button": "GTH" }
+  ]
+}

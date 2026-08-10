@@ -1,0 +1,25 @@
+{
+  "style": "warm-studio",
+  "lang": "hy",
+  "fps": 30,
+  "video": "main.mp4",
+  "background": "bg.png",
+  "music": "music.mp3",
+  "musicVolume": 0.07,
+  "brand": { "badge": "GTH", "name": "ԳՈՌ", "role": "GTH LAB" },
+  "scenes": [
+    { "type": "hook", "dur": 72, "title": "GTH LAB", "subtitle": "AI AGENT LAB" },
+    {
+      "type": "speaker",
+      "dur": 900,
+      "zooms": [[0, 1.04], [5.6, 1.1], [11.4, 1.0], [16.3, 1.07], [20.3, 1.12], [24.0, 1.02], [28.9, 1.13]],
+      "punches": [
+        { "at": 6.0, "dur": 62, "line1": "GTH", "line2": "LAB" },
+        { "at": 16.5, "dur": 78, "line1": "ամեն", "line2": "շաբաթ" },
+        { "at": 20.4, "dur": 66, "line1": "հետևիր", "line2": "ալիքին" }
+      ],
+      "nameAt": 24.0
+    },
+    { "type": "cta", "dur": 90, "line1": "ՀԵՏԵՎԻՐ", "line2": "ԱԼԻՔԻՆ", "button": "GTH LAB" }
+  ]
+}
