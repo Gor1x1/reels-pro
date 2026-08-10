@@ -5,7 +5,7 @@ description: Профессиональный монтаж вертикальн�
 
 # Reels Pro
 
-Рабочий репозиторий: **`~/Developer/gth-reels`** — там код, стили и пайплайн.
+Рабочий репозиторий: **`~/Developer/reels-pro`** — там код, стили и пайплайн.
 Ролик описывается спецификацией `src/spec.json`, стиль переключается одной строкой.
 
 ## Железные правила
@@ -29,7 +29,7 @@ description: Профессиональный монтаж вертикальн�
 ## Замена фона — и главная ловушка
 
 ```bash
-python ~/Developer/gth-reels/pipeline/matte.py \
+python ~/Developer/reels-pro/pipeline/matte.py \
   --video raw.mp4 --bg bg.png --out comp.mp4 \
   --grade "0.82,0.76,0.66" --exposure 0.92
 ```
