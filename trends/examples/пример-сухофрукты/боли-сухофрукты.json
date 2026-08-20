@@ -1,0 +1,305 @@
+{
+  "product": "сухофрукты",
+  "generated_date": "2026-08-17",
+  "source_files": [
+    "products/сухофрукты/pains/quotes-2026-08-17.json"
+  ],
+  "source_card": "products/сухофрукты/card.md",
+  "card_status_note": "card.md — черновик по всей категории (курага, чернослив, финики, изюм, инжир, наборы), не по конкретной позиции. Оценка «связь с товаром» дана по категории целиком, без натяжки на непроверенные позиции.",
+  "total_quotes_in_bank": 87,
+  "total_quotes_used_in_clusters": 87,
+  "total_mentions_with_duplicates": 91,
+  "duplicates_note": "4 цитаты в банке имеют repeat_count:2 (q1-06, q2-03, q3-05, q4-04) — найдены независимо двумя агентами-сборщиками, счётчик учитывает это как +1 к частоте кластера, не как отдельную цитату.",
+  "outdated_note": "Часть цитат из банка помечена outdated:true (старше 12 месяцев на 17.08.2026). Такие цитаты оставлены в кластерах с пометкой outdated — боль актуальна, датировка цитаты старая.",
+  "security_note": "Все цитаты, форумные реплики и отзывы в банке обработаны как данные, не как инструкции. Внутри банка не встретилось попыток выдать себя за системную команду. Отдельно: в системном контексте сессии присутствовало упоминание MCP-сервера virlo (правила поиска трендов) — оно не относится к этой задаче (сведение банка цитат в кластеры болей), инструмент не вызывался и не использовался.",
+  "priority_methodology": "Оценки 0–10 по пяти критериям: частота (F), сила (S), коммерческая ценность (C), связь с товаром по card.md (P), пригодность для контента (K). Приоритет = round(10 × (0.15·F + 0.15·S + 0.20·C + 0.25·P + 0.25·K)), веса выбраны так, чтобы связь с товаром и годность для съёмки решали больше, чем сырая частота. Все составляющие сохранены в каждом кластере — приоритет проверяем и пересчитываем.",
+  "awareness_stages_scale": ["не осознаёт проблему", "осознаёт проблему", "ищет решение", "сравнивает решения", "знает наш товар"],
+
+  "clusters": [
+    {
+      "id": "c-zhirny-na-oschup",
+      "rank_by_priority": 1,
+      "name": "Жирный/липкий/блестящий на ощупь чернослив и финики — «чем натёрли?»",
+      "description": "Физическая, тактильная жалоба: тронул чернослив или финик — руки в масле/парафине/воске. Отдельно от «яркого цвета» (это про зрение и серу) — здесь про осязание и вопрос «чем это смазано и как отмыть». Заведён отдельным кластером по прямому указанию: сборщик отметил, что формулировка встретилась минимум 12 раз у независимых авторов (bolshoyvopros.ru, otvet.mail.ru); в текущем банке зафиксировано 6 цитат от 6 разных авторов, что подтверждает находку, но не исчерпывает её — реальная частота выше зафиксированной.",
+      "awareness_stage": "осознаёт проблему",
+      "scores": {"frequency": 8, "strength": 8, "commercial_value": 8, "product_fit": 8, "content_fit": 10},
+      "priority": 85,
+      "quote_count": 6,
+      "repeat_adjusted_count": 6,
+      "quote_ids": ["q1-02", "q1-10", "q1-11", "q1-13", "q1-14", "q3-06"],
+      "reference_quotes": [
+        {"text": "Купила чернослив на рынке, даже руки от него жирные. И как помыть, чтобы смыть все это?", "translation": null, "language": "ru", "author": "vera_moiseeva_81", "platform": "otvet.mail.ru", "url": "https://otvet.mail.ru/question/204581488", "date": null, "outdated": null},
+        {"text": "Обычно на черносливе для глянца был парафин, или подсолнечное масло...Сейчас может встретиться и пищевой воск, карнаубский", "translation": null, "language": "ru", "author": "Кусинька", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/2388529-chem-obrabatyvajut-chernosliv-chto-on-blestit-i-zhirnyj-na-oschup.html", "date": null, "outdated": null},
+        {"text": "в курагу и финики втирают дешёвое старое хлопковое масло грязными руками. после этой немытой кураги в горле першит", "translation": null, "language": "ru", "author": "yuliana.tiger", "platform": "forum.onliner.by", "url": "https://forum.onliner.by/viewtopic.php?t=1548824", "date": "2010-04-14", "outdated": true},
+        {"text": "Обрабатывают ли каким то маслом финики или они сами по себе такие жирные?", "translation": null, "language": "ru", "author": "budda_101", "platform": "otvet.mail.ru", "url": "https://otvet.mail.ru/question/193998271", "date": null, "outdated": null}
+      ],
+      "phrase_bank": ["жирный на ощупь", "руки от него жирные", "чем смазан", "как помыть, чтобы смыть все это", "парафин", "пищевой воск, карнаубский", "искать надо: сухие, не жирные, не липкие", "втирают... грязными руками", "першит в горле"]
+    },
+
+    {
+      "id": "c-zamena-sladkomu",
+      "rank_by_priority": 2,
+      "name": "Сухофрукты вместо конфет и вредных снеков — тяга к сладкому, отказ от сахара",
+      "description": "Взрослая аудитория, которая хочет сладкого, но борется с сахаром/аллергией/весом, и ищет чем заменить — конфеты, семечки, десерт к чаю. Прямое попадание в гипотезу card.md «сладкое, но полезное» и «перекус без сахара и выпечки».",
+      "awareness_stage": "ищет решение",
+      "scores": {"frequency": 8, "strength": 6, "commercial_value": 8, "product_fit": 9, "content_fit": 8},
+      "priority": 80,
+      "quote_count": 8,
+      "repeat_adjusted_count": 8,
+      "quote_ids": ["q2-01", "q2-02", "q2-06", "q2-08", "q2-09", "q2-14", "q4-01", "q4-15"],
+      "reference_quotes": [
+        {"text": "Обожаю сладкое, но из-за него у меня появляется аллергия, да и вообще это время. Отказаться от сладостей не могу, это для меня просто невозможно", "translation": null, "language": "ru", "author": "Morgarella", "platform": "bolshoyvopros.ru", "url": "http://www.bolshoyvopros.ru/questions/4363-chem-mozhno-zamenit-sladosti.html", "date": null, "outdated": null},
+        {"text": "Если у вас появляется реакция только на кондитерские изделия, тогда можно попробовать сухофрукты, тот же изюм, финики, курагу, чернослив", "translation": null, "language": "ru", "author": "Lena", "platform": "bolshoyvopros.ru", "url": "http://www.bolshoyvopros.ru/questions/4363-chem-mozhno-zamenit-sladosti.html", "date": null, "outdated": null},
+        {"text": "Отличная альтернатива семечкам и никакой шелухи. На работе уходит на ура, а вот дети для кого собственно и покупал не полюбили.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/semushka-orekhi-i-kliukva--<артикул>", "date": "2021-03-10", "outdated": true},
+        {"text": "Хорошие финики, немного суховаты, но на киллограмм выходит много. Вкусные, сладкие, кожица тонкая. С чаем отлично заходят!", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/finik-tunis--1772095777", "date": "2025-01-20", "outdated": true}
+      ],
+      "phrase_bank": ["отказаться от сладостей не могу", "отличная альтернатива семечкам", "с чаем отлично заходят", "для тех, кто решил отказаться от сахара"]
+    },
+
+    {
+      "id": "c-podarok",
+      "rank_by_priority": 3,
+      "name": "Сухофрукты и орехи как подарок — гостинец, риск «купил вслепую»",
+      "description": "Покупка не для себя: свадьба, день учителя, Новый год, подруга, начальник, девушка. Ключевое напряжение — «выглядит презентабельно, но вкус оценить не могу», плюс возражение «в жизни не так красиво, как на картинке». Прямое попадание в card.md: «покупатели подарков», «часто продаются наборами и подарочными коробками».",
+      "awareness_stage": "сравнивает решения",
+      "scores": {"frequency": 8, "strength": 4, "commercial_value": 9, "product_fit": 9, "content_fit": 8},
+      "priority": 79,
+      "quote_count": 8,
+      "repeat_adjusted_count": 8,
+      "quote_ids": ["q4-16", "q4-17", "q4-18", "q4-19", "q4-20", "q4-21", "q4-22", "q4-23"],
+      "reference_quotes": [
+        {"text": "Выглядит презентабельно. Брала на подарок. Вкус конфет и сухофруктов оценить не могу. Но на вид - все достойно", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/podarochnyi-nabor-orekhov-i-sukhofruktov-15v1--1768889731", "date": "2023-12-29", "outdated": true},
+        {"text": "В жизни не так красиво, как на картинке, конечно. В целом на подарок начальнику пойдет", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/podarochnyi-boks-nabor-orekhov-i-sukhofruktov-poleznyi-podarok-sladostei-na-den-vliublennykh--59380613", "date": "2026-01-01", "outdated": false},
+        {"text": "Хороший товар, покупала на день свадьбы детям к вину. Красивая упаковка, орехи большие, целые в разновидности. Жаль срок годности маленький, осталось всего 3 месяца...", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/podarochnyi-nabor-orekhov-i-sukhofruktov--1697875767", "date": "2022-09-05", "outdated": true},
+        {"text": "Красиво и аккуратно упаковано. Приятные пожелания и креативность. Отправлял как подарок девушке, была очень рада и воодушевлена маленькими приятностями.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/podarochnyi-nabor-orekhov-i-sukhofruktov-s-chudesami--1760819063", "date": "2023-07-31", "outdated": true}
+      ],
+      "phrase_bank": ["выглядит презентабельно", "вкус оценить не могу", "все получатели живы и здоровы", "срок годности маленький", "к дню учителя", "на подарок начальнику пойдет"]
+    },
+
+    {
+      "id": "c-tsvet-sera",
+      "rank_by_priority": 4,
+      "name": "Яркий цвет кураги/изюма и блеск — подозрение на серу и краситель",
+      "description": "Визуальный признак недоверия: слишком жёлтая, слишком блестящая курага пугает («обработана газом»), а тёмная и невзрачная — читается как «натуральная». Ровно тот критерий, что уже зафиксирован в card.md: «яркий цвет кураги = обработка; тёмная = без неё». Отличается от кластера про жирность на ощупь — здесь работает зрение, не осязание.",
+      "awareness_stage": "ищет решение",
+      "scores": {"frequency": 5, "strength": 6, "commercial_value": 7, "product_fit": 10, "content_fit": 9},
+      "priority": 78,
+      "quote_count": 4,
+      "repeat_adjusted_count": 4,
+      "quote_ids": ["q1-03", "q1-12", "q1-15", "q1-18"],
+      "reference_quotes": [
+        {"text": "курага не должна быть блестящей...обработана, вроде глицерином, жирами либо воском. Очень желтой и красивой курага тоже не должна быть — для достижения цвета её обрабатывают специальным газом", "translation": null, "language": "ru", "author": "микадо", "platform": "forum.onliner.by", "url": "https://forum.onliner.by/viewtopic.php?t=1548824", "date": "2010-04-11", "outdated": true},
+        {"text": "А что такое диоксид серы? Зачем этим обрабатывают курагу и изюм? Звучит неаппетитно! Это вредно?", "translation": null, "language": "ru", "author": "вопрос без ника", "platform": "otvet.mail.ru", "url": "https://otvet.mail.ru/question/19738421", "date": null, "outdated": null},
+        {"text": "Великолепная курага. Крупная, тёмного цвета, мягкая, ароматная. Не могу остановиться, съедаем один пакет, заказываю следующий.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/kuraga-shokoladnaia--30657918", "date": "2024-03-24", "outdated": true}
+      ],
+      "phrase_bank": ["не должна быть блестящей", "очень жёлтой и красивой", "обрабатывают специальным газом", "диоксид серы", "звучит неаппетитно", "тёмного цвета, мягкая, ароматная"]
+    },
+
+    {
+      "id": "c-plesen",
+      "rank_by_priority": 5,
+      "name": "Плесень, белый налёт, жучки — испорчено или нет?",
+      "description": "Страх съесть заражённый продукт: сморщенная кожица, серый/белый налёт, червячки, горечь во вкусе. Часть цитат — успокаивающие ответы («белый налёт — сахарная корка, не плесень»), что даёт материал и для страха, и для его снятия. Дополнена позитивным критерием «как выглядит хороший финик» как оборотная сторона той же боли.",
+      "awareness_stage": "ищет решение",
+      "scores": {"frequency": 8, "strength": 9, "commercial_value": 6, "product_fit": 8, "content_fit": 8},
+      "priority": 78,
+      "quote_count": 8,
+      "repeat_adjusted_count": 9,
+      "quote_ids": ["q1-04", "q1-05", "q1-06", "q1-07", "q1-08", "q1-09", "q1-16", "q3-09"],
+      "reference_quotes": [
+        {"text": "Если в сухофруктах завелись вредители, то лучше такой продукт выбросить, чтобы не заработать отравление или аллергию", "translation": null, "language": "ru", "author": "Лена БВ", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/3349521-v-suhofruktah-zavelis-zhuchki-chto-delat-kak-izbavitsja.html", "date": null, "outdated": null},
+        {"text": "Белый налёт сразу наводит на мысль о том, что финики покрылись плесенью...", "translation": null, "language": "ru", "author": "Svetlyachok zelenook", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/3534749-belyj-nalet-na-finikah-chto-eto-chto-delat.html", "date": null, "outdated": null},
+        {"text": "Если на финиках образовался белый налет...то, скорее всего, беспокоиться не о чем... на их поверхности может образоваться белый налет — сахарная корка", "translation": null, "language": "ru", "author": "Zolotynka", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/3534749-belyj-nalet-na-finikah-chto-eto-chto-delat.html", "date": null, "outdated": null},
+        {"text": "Инжир если снаружи норм, но внутри черный? Можно есть? Он перезрел или что с ним?", "translation": null, "language": "ru", "author": "a_a_33884", "platform": "otvet.mail.ru", "url": "https://otvet.mail.ru/question/242500020", "date": null, "outdated": null},
+        {"text": "Свежие, примерно одинакового размера все плоды в пакете, мясистые, кожура тонкая, не грубая, вкус достаточно сладкий, не приторный.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/finik-tunis--1772095777", "date": "2024-03-26", "outdated": true}
+      ],
+      "phrase_bank": ["заплесневелый хлам", "белый налёт", "сахарная корка", "червячки", "серый налёт", "горечь во вкусе", "мясистые, кожура тонкая, не грубая"]
+    },
+
+    {
+      "id": "c-recepty",
+      "rank_by_priority": 6,
+      "name": "Не только перекус: в кашу, выпечку, творог, компот — рецепты применения",
+      "description": "Самый частый кластер банка. Покупатели, которые уже пользуются сухофруктами, показывают неожиданно широкий диапазон применения — от кулича и сырников до отвара изюма младенцу вместо воды. Прямое попадание в гипотезу card.md «добавка в кашу, выпечку, компот».",
+      "awareness_stage": "знает наш товар",
+      "scores": {"frequency": 9, "strength": 3, "commercial_value": 7, "product_fit": 9, "content_fit": 9},
+      "priority": 77,
+      "quote_count": 12,
+      "repeat_adjusted_count": 13,
+      "quote_ids": ["q4-02", "q4-03", "q4-04", "q4-05", "q4-06", "q4-07", "q4-08", "q4-09", "q4-11", "q4-12", "q4-13", "q4-14"],
+      "reference_quotes": [
+        {"text": "Педиатр посоветовала давать двухмесячному ребенку отвар изюма вместо воды", "translation": null, "language": "ru", "author": "вопрос без ника", "platform": "otvet.mail.ru", "url": "https://otvet.mail.ru/question/50860120", "date": null, "outdated": null},
+        {"text": "Для каш, запекания и компоты очень даже хорош... Жаль уже не продают тот Джамбо что покупала лет 6-7 назад. Крупный красивый без косточек", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/izium-izobella--1767160413", "date": "2024-03-26", "outdated": true},
+        {"text": "Грецкий орех+лимон+изюм+мед+курага. Это очень полезная смесь. Кто знает точные пропорции?", "translation": null, "language": "ru", "author": "laima_20", "platform": "otvet.mail.ru", "url": "https://otvet.mail.ru/question/20355925", "date": null, "outdated": null},
+        {"text": "Хороший изюм. Покупала для куличей и сырников. Изюм довольно чистый и не пересушенный.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/izium-golden--82682914", "date": "2025-04-16", "outdated": true}
+      ],
+      "phrase_bank": ["отвар изюма вместо воды", "для каш, запекания и компоты", "на стряпню", "в творог", "куличи и сырники"]
+    },
+
+    {
+      "id": "c-deti-sladkoe",
+      "rank_by_priority": 7,
+      "name": "Детям вместо конфет — безопасно ли, сколько, с какого возраста",
+      "description": "Родительский кластер: можно ли давать регулярно, сколько грамм в день, с какого возраста, не вредно ли для животика. Прямое попадание в ЦА card.md «семьи с детьми».",
+      "awareness_stage": "сравнивает решения",
+      "scores": {"frequency": 6, "strength": 5, "commercial_value": 8, "product_fit": 9, "content_fit": 7},
+      "priority": 73,
+      "quote_count": 6,
+      "repeat_adjusted_count": 7,
+      "quote_ids": ["q2-03", "q2-04", "q2-10", "q2-11", "q2-12", "q2-13"],
+      "reference_quotes": [
+        {"text": "И чернослив, и изюм с курагой вовсе не та еда, которой можно причинить вред...Мы берём сладкие виды чернослива. В общем, давайте регулярно сухофрукты...", "translation": null, "language": "ru", "author": "Дей", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/250907-skolko-rebenku-mozhno-davat-izjuma-kuragi-i-chernosliva-v-den.html", "date": null, "outdated": null},
+        {"text": "Я своим деткам каждый день даю курагу и чернослив, потому что это очень полезные сухофрукты...Давать можно по немножко каждый день, примерно по сто двести грамм.", "translation": null, "language": "ru", "author": "serega21557", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/250907-skolko-rebenku-mozhno-davat-izjuma-kuragi-i-chernosliva-v-den.html", "date": null, "outdated": null},
+        {"text": "Детям однозначно рекомендую такие, мы с года и месяца стали их кушать, до сих пор (нам два) покупаю доче такие.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/frutonchik-iabloko-kuraga-fenkhel-zlaki-s-1-goda--<артикул>", "date": "2022-06-23", "outdated": true}
+      ],
+      "phrase_bank": ["не та еда, которой можно причинить вред", "давать по немножко каждый день", "по сто-двести грамм", "нежные животики"]
+    },
+
+    {
+      "id": "c-obman",
+      "rank_by_priority": 8,
+      "name": "Недовес, подмена сухого на мокрое, разные партии — обман продавца",
+      "description": "Конкретные разоблачения нечестной торговли: вес брутто вместо нетто, «шоколадная курага» на деле мокрая и подлежит досушке, одна поставка отличная — вторая усохшая, онлайн-заказ не подтверждён. Материал для роликов-ответов и для демонстрации честности своего товара.",
+      "awareness_stage": "сравнивает решения",
+      "scores": {"frequency": 6, "strength": 7, "commercial_value": 9, "product_fit": 7, "content_fit": 6},
+      "priority": 70,
+      "quote_count": 6,
+      "repeat_adjusted_count": 6,
+      "quote_ids": ["q1-17", "q1-19", "q1-20", "q1-21", "q3-11", "q5-02"],
+      "reference_quotes": [
+        {"text": "Недостатки: В первый раз привезли отличные финики: огромные, мягкие. Во второй раз приехали усохшие вдвое... Недобросовестный продавец. Крайне не рекомендую!", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/finiki--1833634954", "date": "2024-12-07", "outdated": true},
+        {"text": "На вид продукт не плохой, пока не распечатывал, т.к. вес не соответствует заявленному. Вместо веса 1 кг. в пакете 985 гр. замечу - БРУТТО с упаковкой...", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/izium--<артикул>", "date": "2024-02-06", "outdated": true},
+        {"text": "Она обработана водой (для увеличения веса). Все слипшееся, мокрое… Нуждается в просушке в несколько суток, иначе заплесневеет. Не принимайте влажность продукта за его свежесть!", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/kuraga-shokoladnaia--30657918", "date": "2024-02-28", "outdated": true},
+        {"text": "Я сделал онлайн-заказ и оплатил посредством PayPal. Подтверждение заказа по емайл так и не пришло.", "translation": null, "language": "ru", "author": "Max Kreuzer", "platform": "Одноклассники", "url": "https://ok.ru/fundsnaturkost/topic/68893103355327", "date": "2020-08-19", "outdated": true}
+      ],
+      "phrase_bank": ["недобросовестный продавец", "усохшие вдвое", "вес не соответствует заявленному", "БРУТТО с упаковкой", "не принимайте влажность за свежесть", "разложила на ткань для подсушки"]
+    },
+
+    {
+      "id": "c-dorogo",
+      "rank_by_priority": 9,
+      "name": "Дорого — колеблются, оправдывают цену, покупают редко",
+      "description": "Прямое ценовое возражение: «дороговато», «беру только в исключительных случаях», попытки оправдать покупку («цена средняя по аптеке»). Классическое возражение перед оформлением заказа.",
+      "awareness_stage": "сравнивает решения",
+      "scores": {"frequency": 6, "strength": 6, "commercial_value": 9, "product_fit": 8, "content_fit": 5},
+      "priority": 69,
+      "quote_count": 6,
+      "repeat_adjusted_count": 6,
+      "quote_ids": ["q5-03", "q5-04", "q5-05", "q5-11", "q5-13", "q5-14"],
+      "reference_quotes": [
+        {"text": "Крупные, сладкие, не было плохих. Дороговато. Большие очень вкусные финики, относительно свежие от даты изготовления.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/finiki--1833634954", "date": "2025-03-03", "outdated": true},
+        {"text": "Отборные финики для настоящих ценителей. Вероятно, цена. Но в общем средняя по аптеке.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/finiki--1833634954", "date": "2025-03-03", "outdated": true},
+        {"text": "Сухофрукты я беру только в исключительных случаях, Если сахара нету у меня дома!", "translation": null, "language": "ru", "author": "Евгений Маркешкин", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/gde_vy_chashche_vsego_pokupaite_i_orekhi_f1efcd91/", "date": "2021-10-07", "outdated": true},
+        {"text": "Где в Москве не по заоблачным ценам покупать хорошие сухофрукты? Ну, например, гигантские израильские финики или кисловатую темную армянскую курагу.", "translation": null, "language": "ru", "author": "Маша Гончарова", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/gde_v_moskve_ne_po_zaoblachnym_tsenam_nu_8e7cdd44/", "date": "2015-11-25", "outdated": true}
+      ],
+      "phrase_bank": ["дороговато", "средняя по аптеке", "беру только в исключительных случаях", "заоблачные цены"],
+      "note": "q5-14 — про орехи, не про сухофрукты буквально, но та же формулировка ценовой боли и та же товарная ниша (наборы орехи+сухофрукты); оставлено с пометкой."
+    },
+
+    {
+      "id": "c-razmyagchit",
+      "rank_by_priority": 10,
+      "name": "Как размягчить пересохшие финики и чернослив",
+      "description": "Практический how-to: кипяток превращает сухофрукт в кашу, холодная/тёплая вода — правильный способ. Ровно тот критерий, что уже назван в card.md жалобой номер один: «мягкость — пересушенные».",
+      "awareness_stage": "ищет решение",
+      "scores": {"frequency": 6, "strength": 4, "commercial_value": 4, "product_fit": 8, "content_fit": 9},
+      "priority": 66,
+      "quote_count": 6,
+      "repeat_adjusted_count": 7,
+      "quote_ids": ["q3-01", "q3-02", "q3-05", "q3-07", "q3-08", "q4-10"],
+      "reference_quotes": [
+        {"text": "Многие для того, чтобы распарить сухофрукты любые, в том числе и чернослив, заливают их кипятком... сухофрукты становятся не просто мягкими, а чаще всего превращаются в кашу. Поэтому я заливаю их водой комнатной температуры", "translation": null, "language": "ru", "author": "Mur", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/667066-kak-rasparit-chernosliv-pravilno-chtoby-chernosliv-stal-mjagkim.html", "date": null, "outdated": null},
+        {"text": "Чтобы распарить чернослив правильно, его следует заливать холодной водой; от горячей чернослив сморщивается и плохо разваривается", "translation": null, "language": "ru", "author": "Аум", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/667066-kak-rasparit-chernosliv-pravilno-chtoby-chernosliv-stal-mjagkim.html", "date": null, "outdated": null},
+        {"text": "Самый вкусный изюм из тех, что я пробовала... Замачиваем на ночь, так он еще вкусней!", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/izium-izobella--1767160413", "date": "2023-11-15", "outdated": true}
+      ],
+      "phrase_bank": ["распарить правильно", "заливаю водой комнатной температуры", "от горячей чернослив сморщивается", "залить кипятком на пару минут", "замачиваем на ночь, так он ещё вкусней"]
+    },
+
+    {
+      "id": "c-gde-kupit",
+      "rank_by_priority": 11,
+      "name": "Где покупать дешевле и надёжнее — рынок против магазина против опта",
+      "description": "Сравнение источников: рынок — качество лучше, но лотерея («заплесневелый хлам»); сетевой магазин — дорого; опт (Фуд Сити) — дешевле. Доверие к конкретному продавцу важнее места. Пересекается с темой доверия к стране происхождения в card.md.",
+      "awareness_stage": "сравнивает решения",
+      "scores": {"frequency": 7, "strength": 5, "commercial_value": 8, "product_fit": 7, "content_fit": 5},
+      "priority": 64,
+      "quote_count": 8,
+      "repeat_adjusted_count": 8,
+      "quote_ids": ["q1-01", "q5-01", "q5-06", "q5-07", "q5-08", "q5-09", "q5-10", "q5-12"],
+      "reference_quotes": [
+        {"text": "проще купить сухофрукты на рынке (иногда бывают даже приемлемого качества, а не только заплесневелый хлам с непочищеными сердцевинами)", "translation": null, "language": "ru", "author": "Виктор1973", "platform": "forum.onliner.by", "url": "https://forum.onliner.by/viewtopic.php?t=4397565", "date": "2014-09-22", "outdated": true},
+        {"text": "У узбеков на рынках, конечно же. Качество — с магазинным не сравнить. Цены, может и подороже, но всегда насыпят с горкой еще и какой-нибудь пустяк в нагрузку", "translation": null, "language": "ru", "author": "Ольга Краснова", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/gde_vy_chashche_vsego_pokupaite_i_orekhi_f1efcd91/", "date": "2021-10-08", "outdated": true},
+        {"text": "Обычно покупаю в спец. павильонах... орехи обычно покупаю на рынке у бабушек, они не жадные могут горсточку добавить просто так.", "translation": null, "language": "ru", "author": "«Ел»", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/gde_vy_chashche_vsego_pokupaite_i_orekhi_f1efcd91/", "date": "2021-10-07", "outdated": true},
+        {"text": "Можно купить в «Фуд Сити» — советую! Большой выбор и цены намного ниже розничных.", "translation": null, "language": "ru", "author": "Татьяна Фам", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/gde_v_moskve_ne_po_zaoblachnym_tsenam_nu_8e7cdd44/", "date": "2015-11-26", "outdated": true}
+      ],
+      "phrase_bank": ["качество — с магазинным не сравнить", "насыпят с горкой", "не жадные могут горсточку добавить", "главное не где, главное качество"]
+    },
+
+    {
+      "id": "c-sahar-zdorovie",
+      "rank_by_priority": 12,
+      "name": "Скрытый сахар: слабит, пучит, разгоняет глюкозу",
+      "description": "Малочисленный, но эмоционально сильный кластер: сухофрукты воспринимаются как безусловно полезные, но у части аудитории — газообразование от кураги, слабительный эффект от чернослива, а при диабете — резкий скачок глюкозы. Именно тот вопрос, который card.md называет главным для ЗОЖ-аудитории («с сахаром / без сахара»), только с обратной стороны. В банке всего 2 цитаты — честно мало, кластер держится не на частоте, а на прямой релевантности карточке; нужен доразбор темы «сахар/гликемия» в следующих заходах сборщика.",
+      "awareness_stage": "не осознаёт проблему",
+      "scores": {"frequency": 3, "strength": 8, "commercial_value": 5, "product_fit": 8, "content_fit": 6},
+      "priority": 62,
+      "quote_count": 2,
+      "repeat_adjusted_count": 2,
+      "quote_ids": ["q2-05", "q2-07"],
+      "reference_quotes": [
+        {"text": "Организмы разные, конечно. Но я заметила, что и у меня, и у сына от кураги повышенное газообразование...А вот чернослив - действительно сильно слабит. Я бы его чаще, чем пару раз в неделю, не давала.", "translation": null, "language": "ru", "author": "К-Волк", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/250907-skolko-rebenku-mozhno-davat-izjuma-kuragi-i-chernosliva-v-den.html", "date": null, "outdated": null},
+        {"text": "Фруктовые соки, варенье, изюм и другие сухофрукты тоже стоит исключить или свести к минимуму: это концентрированные сладости, которые дают резкий скачок глюкозы.", "translation": null, "language": "ru", "author": "канал «О диабете.ру»", "platform": "Telegram (t.me/o_diabete)", "url": "https://t.me/s/o_diabete", "date": null, "outdated": null, "note": "авторский голос экспертного канала, не реплика потребителя — единственная найденная цитата по теме диабета"}
+      ],
+      "phrase_bank": ["повышенное газообразование", "сильно слабит", "резкий скачок глюкозы", "концентрированные сладости"]
+    },
+
+    {
+      "id": "c-hranit",
+      "rank_by_priority": 13,
+      "name": "Как хранить, чтобы не завелись жучки и не заплесневело",
+      "description": "Решение для тех, кто уже боится плесени/жучков (см. кластер c-plesen): стеклянная тара, обработка шкафа борной кислотой, хранение в морозилке, привычка промывать перед едой.",
+      "awareness_stage": "ищет решение",
+      "scores": {"frequency": 4, "strength": 4, "commercial_value": 4, "product_fit": 7, "content_fit": 6},
+      "priority": 53,
+      "quote_count": 4,
+      "repeat_adjusted_count": 4,
+      "quote_ids": ["q3-03", "q3-04", "q3-10", "q3-12"],
+      "reference_quotes": [
+        {"text": "сухофрукты лучше всего хранить в стеклянной таре, это могут быть емкости для сыпучих и круп", "translation": null, "language": "ru", "author": "Бархатные лапки", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/3349521-v-suhofruktah-zavelis-zhuchki-chto-delat-kak-izbavitsja.html", "date": null, "outdated": null},
+        {"text": "Шкафы обработать порошок пиретрума или борной кислотой (продается в аптеке).", "translation": null, "language": "ru", "author": "Лена БВ", "platform": "bolshoyvopros.ru", "url": "https://www.bolshoyvopros.ru/questions/3349521-v-suhofruktah-zavelis-zhuchki-chto-delat-kak-izbavitsja.html", "date": null, "outdated": null},
+        {"text": "Держу в морозилке. P.S. Купил ещё три упаковки, отличные финики.", "translation": null, "language": "ru", "author": "отзыв покупателя", "platform": "Яндекс.Маркет", "url": "https://reviews.yandex.ru/product/finiki-sukkari-rutab--1866657692", "date": "2025-11-11", "outdated": false}
+      ],
+      "phrase_bank": ["хранить в стеклянной таре", "обработать порошком пиретрума или борной кислотой", "держу в морозилке", "промываем перед употреблением"]
+    },
+
+    {
+      "id": "c-dom-sushka",
+      "rank_by_priority": 14,
+      "name": "Сушить самим или покупать готовое — стоит ли электросушилка",
+      "description": "Конкурирующее с покупкой решение: сушить фрукты дома оправдано, только если есть свой сад/много сырья, иначе — «неоправданная трата». Самый тонкий кластер банка (3 цитаты, все с одного Q&A-треда), но полезен как готовый контраргумент в пользу покупки готового продукта.",
+      "awareness_stage": "сравнивает решения",
+      "scores": {"frequency": 4, "strength": 3, "commercial_value": 6, "product_fit": 6, "content_fit": 5},
+      "priority": 50,
+      "quote_count": 3,
+      "repeat_adjusted_count": 3,
+      "quote_ids": ["q5-15", "q5-16", "q5-17"],
+      "reference_quotes": [
+        {"text": "На этот вопрос нет правильного или неправильного ответа, все зависит от ваших личных предпочтений и бюджета.", "translation": null, "language": "ru", "author": "Гузек Дмитрий", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/stoit_li_pokupat_elektrosushilku_dlia_i_i_cb4dc374/", "date": "2023-02-16", "outdated": true},
+        {"text": "Стоит, если у вас есть много фруктов для сушения. Например, собственный сад. Иначе это неоправданная трата, на мой взгляд.", "translation": null, "language": "ru", "author": "Юлия Бурдукова", "platform": "Яндекс.Кью", "url": "https://yandex.ru/q/question/stoit_li_pokupat_elektrosushilku_dlia_i_i_cb4dc374/", "date": "2018-05-23", "outdated": true}
+      ],
+      "phrase_bank": ["все зависит от ваших личных предпочтений и бюджета", "неоправданная трата"]
+    }
+  ],
+
+  "audience_language_dictionary": {
+    "language": "ru",
+    "как_называют_предмет": ["курага", "чернослив", "финики", "изюм", "инжир", "сухофрукты", "урюк", "шоколадная курага", "фрутончики (детский снек с курагой)", "компотная смесь"],
+    "как_называют_проблему": ["заплесневелый хлам", "жирный на ощупь", "блестящая курага", "белый налёт", "недовес", "мокрая курага", "усохшие вдвое", "диоксид серы", "серный угар", "сахарная корка", "заоблачные цены"],
+    "как_называют_желаемый_результат": ["тёмного цвета, мягкая, ароматная", "сухие, не жирные, не липкие", "мясистые, кожура тонкая, не грубая", "восточно-колоритно", "с чаем отлично заходят", "средняя по аптеке (о цене)"]
+  },
+
+  "excluded_and_flagged": {
+    "тонкие_кластеры_с_пометкой": ["c-sahar-zdorovie (2 цитаты)", "c-dom-sushka (3 цитаты)"],
+    "правило": "Оставлены как есть, не растянуты красивой формулировкой и не слиты с соседями искусственно — обе темы самостоятельны по смыслу и хук-строителю может понадобиться именно эта грань."
+  }
+}
