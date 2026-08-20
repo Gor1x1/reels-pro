@@ -1,7 +1,11 @@
 node_modules/
 out/
+runs/
 .env
+__pycache__/
+
+# рабочие медиа: исходники кладутся на каждой машине свои
+public/src/
+public/voice.wav
 public/main.mp4
 public/*.mov
-public/bg.png
-public/music.mp3

@@ -1,25 +1,101 @@
 {
-  "style": "warm-studio",
+  "tz_id": "VOICE-HOOK-01",
+  "video_id": "VOICE-HOOK-01",
+  "article": "287963132",
+  "style": "fresh-mint",
+  "pacing": "fast",
   "lang": "hy",
   "fps": 30,
-  "video": "main.mp4",
-  "background": "bg.png",
+  "platform": "multi",
+  "captionAnim": "karaoke",
+  "voice": "voice.wav",
+  "voiceVolume": 1.0,
   "music": "music.mp3",
-  "musicVolume": 0.07,
-  "brand": { "badge": "GTH", "name": "ԳՈՌ", "role": "GTH LAB" },
+  "musicVolume": 0.05,
+  "duck": true,
+
+  "_note": "Тест озвучки: хук-вызов, синтез hy_AM-gor-medium. Сцены нарезаны по границам фраз озвучки, а не на глаз. Порядок кадров идёт за текстом: вопрос — чистая ткань, «не поверил» — перечёркнутое пятно, «одна бутылка вместо всех» — бутылка Дюрин, «взял самое худшее» — заливка кетчупом и майонезом.",
+
   "scenes": [
-    { "type": "hook", "dur": 72, "title": "GTH LAB", "subtitle": "AI AGENT LAB" },
     {
-      "type": "speaker",
-      "dur": 900,
-      "zooms": [[0, 1.04], [5.6, 1.1], [11.4, 1.0], [16.3, 1.07], [20.3, 1.12], [24.0, 1.02], [28.9, 1.13]],
-      "punches": [
-        { "at": 6.0, "dur": 62, "line1": "GTH", "line2": "LAB" },
-        { "at": 16.5, "dur": 78, "line1": "ամեն", "line2": "շաբաթ" },
-        { "at": 20.4, "dur": 66, "line1": "հետևիր", "line2": "ալիքին" }
-      ],
-      "nameAt": 24.0
+      "type": "hook",
+      "sec": 3.0,
+      "src": "src/stains-demo.mp4",
+      "isVideo": true,
+      "in": 0.3,
+      "mute": false,
+      "volume": 0.1,
+      "captions": true,
+      "zooms": [[0, 1.0], [2.4, 1.08]]
     },
-    { "type": "cta", "dur": 90, "line1": "ՀԵՏԵՎԻՐ", "line2": "ԱԼԻՔԻՆ", "button": "GTH LAB" }
+    {
+      "type": "clip",
+      "sec": 1.53,
+      "src": "src/stains-demo.mp4",
+      "in": 5.9,
+      "mute": false,
+      "volume": 0.1,
+      "zooms": [[0, 1.06], [1.5, 1.0]]
+    },
+    {
+      "type": "clip",
+      "sec": 2.49,
+      "src": "src/stains-demo.mp4",
+      "in": 8.2,
+      "enter": "whip",
+      "mute": false,
+      "volume": 0.1
+    },
+    {
+      "type": "clip",
+      "sec": 3.68,
+      "src": "src/stains-demo.mp4",
+      "in": 21.8,
+      "enter": "fade",
+      "mute": false,
+      "volume": 0.1,
+      "zooms": [[0, 1.0], [3.6, 1.09]]
+    },
+    {
+      "type": "clip",
+      "sec": 2.19,
+      "src": "src/stains-demo.mp4",
+      "in": 27.9,
+      "enter": "whip",
+      "mute": false,
+      "volume": 0.12,
+      "zooms": [[0, 1.05], [2.1, 1.0]]
+    },
+    {
+      "type": "clip",
+      "sec": 3.94,
+      "src": "src/stains-demo.mp4",
+      "in": 11.6,
+      "enter": "fade",
+      "mute": false,
+      "volume": 0.12,
+      "zooms": [[0, 1.0], [3.9, 1.07]]
+    },
+    {
+      "type": "clip",
+      "sec": 1.81,
+      "src": "src/stains-demo.mp4",
+      "in": 15.3,
+      "mute": false,
+      "volume": 0.1,
+      "zooms": [[0, 1.07], [1.8, 1.0]]
+    },
+    {
+      "type": "cta",
+      "sec": 3.16,
+      "src": "src/stains-demo.mp4",
+      "isVideo": true,
+      "in": 31.4,
+      "mute": false,
+      "volume": 0.12,
+      "captions": true,
+      "line1": "ԴՅՈՒՐԻՆ",
+      "sku": "287963132"
+    }
   ]
 }

@@ -1,0 +1,70 @@
+{
+  "id": "M1-K1-ГЕЛ-001",
+  "product": "гель-дюрин",
+  "format": "до-после",
+  "lang": "hy",
+  "style": "fresh-mint",
+  "pacing": "fast",
+  "platform": "multi",
+  "captionAnim": "word-pop",
+  "music": "music.mp3",
+
+  "beats": [
+    {
+      "role": "hook",
+      "sec": 2.6,
+      "shot": "девушка замечает пятно на любимой майке, злится",
+      "source": { "src": "src/a.mp4", "in": 1.0 },
+      "onscreen": "ԲԻԾԸ ՉԻ ՀԵՌԱՆՈՒՄ",
+      "zooms": [[0, 1.0], [0.8, 1.12]]
+    },
+    {
+      "role": "problem",
+      "sec": 4.0,
+      "shot": "бросает майку в мусор, потом достаёт обратно",
+      "source": { "src": "src/b.mp4", "in": 3.0 },
+      "enter": "whip",
+      "line": "Այս բիծը երկու անգամ լվացի, ոչինչ չօգնեց։"
+    },
+    {
+      "role": "solution",
+      "sec": 4.5,
+      "shot": "крупно: капля геля падает прямо на пятно",
+      "source": { "src": "src/c.mp4", "in": 1.5 },
+      "enter": "fade",
+      "line": "Հետո փորձեցի այս գելը, մեկ կաթիլ ուղիղ բծի վրա։",
+      "overlays": [
+        { "kind": "pointer", "at": 0.8, "dur": 2.6, "x": 0.62, "y": 0.42, "label": "ՄԵԿ ԿԱԹԻԼ", "from": "left" }
+      ]
+    },
+    {
+      "role": "compare",
+      "sec": 4.0,
+      "shot": "та же майка до и после стирки",
+      "before": { "src": "src/b.mp4", "label": "ՄԻՆՉ" },
+      "after": { "src": "src/d.mp4", "label": "ՀԵՏՈ" },
+      "enter": "zoom",
+      "at": 0.9,
+      "wipe": 1.1
+    },
+    {
+      "role": "proof",
+      "sec": 5.0,
+      "shot": "чистая ткань крупно, руки расправляют майку",
+      "source": { "src": "src/d.mp4", "in": 2.0 },
+      "line": "Երեսուն վայրկյան և բիծը չկա, կարծես նոր լինի։",
+      "overlays": [
+        { "kind": "count", "at": 0.3, "dur": 2.2, "to": 30, "suffix": " ՎՐԿ", "label": "ԱՅԴՔԱՆ Է ՊԵՏՔ" },
+        { "kind": "offer", "at": 2.6, "dur": 2.4, "price": "2 900 ֏", "oldPrice": "4 500 ֏" }
+      ]
+    },
+    {
+      "role": "cta",
+      "sec": 3.2,
+      "shot": "товар в руке, крупно",
+      "source": { "src": "src/c.mp4", "in": 6.0 },
+      "enter": "fade",
+      "onscreen": "ՊԱՏՎԻՐԻՐ\nՀԻՄԱ"
+    }
+  ]
+}

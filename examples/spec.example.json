@@ -1,18 +1,59 @@
 {
-  "style": "bold-orange",
+  "style": "fresh-mint",
+  "pacing": "fast",
   "lang": "ru",
   "fps": 30,
-  "video": "main.mp4",
-  "background": "bg.png",
-  "brand": { "badge": "GTH" },
+  "platform": "multi",
+  "captionAnim": "word-pop",
+  "music": "music.mp3",
+  "musicVolume": 0.08,
+  "duck": true,
   "scenes": [
-    { "type": "hook", "dur": 70, "title": "ЗАГОЛОВОК", "subtitle": "ПОДЗАГОЛОВОК" },
     {
-      "type": "speaker",
-      "dur": 600,
-      "zooms": [[0, 1.05], [8, 1.12]],
-      "punches": [{ "at": 8, "dur": 60, "line1": "ключевая", "line2": "мысль" }]
+      "type": "hook",
+      "sec": 2.5,
+      "src": "src/a.mp4",
+      "isVideo": true,
+      "in": 4.0,
+      "title": "ЗАГОЛОВОК ХУКА",
+      "zooms": [[0, 1.0], [0.8, 1.12]]
     },
-    { "type": "cta", "dur": 90, "line1": "ПОДПИШИСЬ", "button": "GTH" }
+    {
+      "type": "clip",
+      "sec": 3.5,
+      "src": "src/b.mp4",
+      "in": 12.0,
+      "enter": "whip",
+      "overlays": [
+        { "kind": "pointer", "at": 0.6, "dur": 2.2, "x": 0.6, "y": 0.45, "label": "СМОТРИ СЮДА" }
+      ]
+    },
+    {
+      "type": "compare",
+      "sec": 4.0,
+      "at": 0.9,
+      "wipe": 1.1,
+      "before": { "src": "src/b.mp4", "isVideo": true, "label": "БЫЛО" },
+      "after": { "src": "src/c.mp4", "isVideo": true, "label": "СТАЛО" }
+    },
+    {
+      "type": "clip",
+      "sec": 4.0,
+      "src": "src/c.mp4",
+      "in": 2.0,
+      "overlays": [
+        { "kind": "offer", "at": 1.4, "dur": 2.4, "price": "2 900 ֏", "oldPrice": "4 500 ֏" }
+      ]
+    },
+    {
+      "type": "cta",
+      "sec": 3.0,
+      "src": "src/a.mp4",
+      "isVideo": true,
+      "in": 1.0,
+      "enter": "fade",
+      "line1": "ЗАКАЖИ",
+      "line2": "СЕЙЧАС"
+    }
   ]
 }

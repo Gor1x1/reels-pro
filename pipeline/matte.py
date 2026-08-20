@@ -19,7 +19,10 @@ p = argparse.ArgumentParser()
 p.add_argument("--video", required=True)
 p.add_argument("--bg", required=True, help="картинка или видео фона")
 p.add_argument("--out", required=True)
-p.add_argument("--model", default="/Users/georgidarbinyan/Developer/rvm/rvm_mobilenetv3_fp32.onnx")
+p.add_argument("--model",
+               default=str(__import__("pathlib").Path(__file__).resolve().parent.parent
+                           / "models" / "rvm_mobilenetv3_fp32.onnx"),
+               help="модель RobustVideoMatting, лежит в models/ рядом с проектом")
 p.add_argument("--downsample", type=float, default=0.4)
 p.add_argument("--fps", type=float, default=30.0)
 # внешний вид
