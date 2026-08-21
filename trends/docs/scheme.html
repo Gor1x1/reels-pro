@@ -1,0 +1,472 @@
+<title>Как идёт анализ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ground: #FAF9F7;
+    --surface: #FFFFFF;
+    --surface-2: #F1EFEC;
+    --line: #DFDBD5;
+    --ink: #1B1E24;
+    --muted: #62697A;
+    --accent: #B44A12;
+    --accent-soft: #F5E3D6;
+    --good: #2F6B4F;
+
+    --display: "Archivo", "Segoe UI", system-ui, sans-serif;
+    --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+    --step: clamp(1.1rem, 2.2vw, 1.6rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #15181D;
+      --surface: #1D2128;
+      --surface-2: #242932;
+      --line: #333944;
+      --ink: #E9EBEF;
+      --muted: #9AA2B1;
+      --accent: #E8783A;
+      --accent-soft: #33251C;
+      --good: #6FBF95;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #15181D;
+    --surface: #1D2128;
+    --surface-2: #242932;
+    --line: #333944;
+    --ink: #E9EBEF;
+    --muted: #9AA2B1;
+    --accent: #E8783A;
+    --accent-soft: #33251C;
+    --good: #6FBF95;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+  }
+
+  /* --- шапка --- */
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(2rem, 5.5vw, 3.1rem);
+    line-height: 1.05;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    margin: 0 0 0.7rem;
+  }
+
+  .lede {
+    font-size: clamp(1rem, 1.9vw, 1.15rem);
+    color: var(--muted);
+    max-width: 40ch;
+    margin: 0 0 2.2rem;
+  }
+
+  .command {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 3.5rem;
+  }
+  .command .label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .command .text {
+    font-family: var(--mono);
+    font-size: clamp(0.95rem, 2.4vw, 1.2rem);
+    font-weight: 500;
+  }
+
+  /* --- лента этапов --- */
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.35rem;
+    letter-spacing: -0.012em;
+    margin: 0 0 1.4rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .flow { margin-bottom: 3.5rem; }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr 15rem;
+    gap: 0 1.2rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .stage:last-child { border-bottom: 0; }
+
+  .num {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent);
+    padding-top: 0.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.02rem;
+    margin: 0 0 0.25rem;
+  }
+  .stage p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.93rem;
+    max-width: 46ch;
+  }
+
+  .out {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 1.75;
+    padding-top: 0.2rem;
+  }
+  .out b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .out .free { color: var(--good); }
+  .out .paid { color: var(--accent); }
+
+  @media (max-width: 44rem) {
+    .stage { grid-template-columns: 2.1rem 1fr; }
+    .out { grid-column: 2; padding-top: 0.6rem; }
+  }
+
+  /* --- три уровня --- */
+
+  .levels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 3.5rem;
+  }
+  .level {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem;
+  }
+  .level.deep { border-top: 3px solid var(--accent); }
+  .level.mid  { border-top: 3px solid var(--muted); }
+  .level.thin { border-top: 3px solid var(--line); }
+
+  .level .rank {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .level strong {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .level p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+
+  /* --- выход --- */
+
+  .outputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 1.4rem;
+    margin-bottom: 3rem;
+  }
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1.3rem 1.4rem;
+  }
+  .box .kind {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.45rem;
+  }
+  .box h3 {
+    font-family: var(--display);
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin: 0 0 0.15rem;
+  }
+  .box .where {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-bottom: 0.9rem;
+    word-break: break-all;
+  }
+  .box ul { margin: 0; padding-left: 1.05rem; }
+  .box li { font-size: 0.9rem; margin-bottom: 0.35rem; }
+  .box li b { font-weight: 600; }
+  .box li span { color: var(--muted); }
+
+  .quote {
+    background: var(--accent-soft);
+    border-radius: 3px;
+    padding: 1.2rem 1.4rem;
+    font-size: 1rem;
+    margin-bottom: 3rem;
+  }
+  .quote b { font-weight: 600; }
+
+  /* --- сводка --- */
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .fact {
+    background: var(--surface);
+    padding: 1rem 1.1rem;
+  }
+  .fact .val {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .fact .cap {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer code {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--ink);
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">Анализ трендов · схема работы</p>
+  <h1>От одной фразы<br>до пакета сценаристу</h1>
+  <p class="lede">Что происходит после команды, сколько это стоит и какие файлы остаются у вас на диске.</p>
+
+  <div class="command">
+    <span class="label">вы говорите</span>
+    <span class="text">проанализируй сухофрукты</span>
+  </div>
+
+  <h2>Восемь шагов, полтора-два часа</h2>
+  <div class="flow">
+
+    <div class="stage">
+      <div class="num">01</div>
+      <div>
+        <h3>Проверка товара</h3>
+        <p>Есть ли папка, пять файлов владельца, шесть банков. Чего нет — агент создаёт сам по образцу.</p>
+      </div>
+      <div class="out"><b>products/&lt;товар&gt;/</b><br><span class="free">бесплатно</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">02</div>
+      <div>
+        <h3>Улов из монитора</h3>
+        <p>Сотня-две роликов, собранных за неделю. Отбираются двадцать сильнейших по силе залёта, а не по просмотрам.</p>
+      </div>
+      <div class="out">чтение — <span class="free">бесплатно</span><br>сбор — <span class="paid">$1.50 / неделя</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">03</div>
+      <div>
+        <h3>Боли — параллельно</h3>
+        <p>Четыре добытчика одновременно читают форумы, соцсети, отзывы и комментарии. Не ждут улова: источники разные.</p>
+      </div>
+      <div class="out"><b>pains/</b> json + ЦИТАТЫ.md<br><span class="free">бесплатно</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">04</div>
+      <div>
+        <h3>Разбор в три уровня</h3>
+        <p>Скачивание, расшифровка речи, машинный портрет ритма, покадровый просмотр. Глубина падает вместе с силой залёта.</p>
+      </div>
+      <div class="out"><b>refs/</b> ролики, кадры,<br>расшифровки, раскадровки<br><span class="free">бесплатно</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">05</div>
+      <div>
+        <h3>Раскладка по банкам</h3>
+        <p>Каждый хук, развитие, концовка и приём получают сквозной номер. Без этого шага работа прогона пропадает.</p>
+      </div>
+      <div class="out"><b>banks/</b> H·R·C·T·F·P<br><span class="free">бесплатно</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">06</div>
+      <div>
+        <h3>Закономерности и углы</h3>
+        <p>Чем верхняя четверть отличается от нижней. Углы: боль дословно → свойство товара → обещание зрителю.</p>
+      </div>
+      <div class="out">черновик пакета<br><span class="free">бесплатно</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">07</div>
+      <div>
+        <h3>Критик</h3>
+        <p>Хватит ли материала на неделю роликов. Замечания один раз, второй заход — только приёмка.</p>
+      </div>
+      <div class="out">вердикт<br><span class="free">бесплатно</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="num">08</div>
+      <div>
+        <h3>Сдача</h3>
+        <p>Три файла в папке прогона, пополненные банки, отчёт в чат с номерами и остатком баланса.</p>
+      </div>
+      <div class="out"><b>runs/&lt;дата&gt;/&lt;товар&gt;/</b><br><span class="free">бесплатно</span></div>
+    </div>
+
+  </div>
+
+  <h2>Почему не все двадцать роликов смотрятся одинаково</h2>
+  <div class="levels">
+    <div class="level deep">
+      <span class="rank">места 1–5</span>
+      <strong>5</strong>
+      <p>Весь ролик покадрово, речь с таймкодами, отдельный файл раскадровки для съёмки.</p>
+    </div>
+    <div class="level mid">
+      <span class="rank">места 6–15</span>
+      <strong>10</strong>
+      <p>Первые три секунды покадрово. Хук решает, досмотрят ли вообще, и стоит в разборе дешевле всего.</p>
+    </div>
+    <div class="level thin">
+      <span class="rank">места 16–20</span>
+      <strong>5</strong>
+      <p>Машинная разметка монитора: хук дословно, тип, формат, тон. Уже оплачена, повторно не заказывается.</p>
+    </div>
+  </div>
+
+  <h2>Что остаётся у вас</h2>
+  <div class="outputs">
+
+    <div class="box">
+      <div class="kind">разовое</div>
+      <h3>Отчёт об этом прогоне</h3>
+      <div class="where">runs/&lt;дата&gt;/&lt;товар&gt;/</div>
+      <ul>
+        <li><b>ПАКЕТ-&lt;товар&gt;.md</b> <span>— сценаристу</span></li>
+        <li><b>АНАЛИЗ-НЕДЕЛИ-&lt;товар&gt;.md</b> <span>— владельцу, на 5 минут</span></li>
+        <li><b>refs/</b> <span>— ролики, кадры, расшифровки</span></li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <div class="kind">накопительное</div>
+      <h3>Имущество товара</h3>
+      <div class="where">products/&lt;товар&gt;/banks/</div>
+      <ul>
+        <li><b>hooks.md</b> <span>— первые секунды</span></li>
+        <li><b>development.md</b> <span>— чем держит дальше</span></li>
+        <li><b>endings.md</b> <span>— концовки и призывы</span></li>
+        <li><b>techniques.md</b> <span>— приёмы съёмки</span></li>
+        <li><b>fails.md</b> <span>— что не взлетело</span></li>
+        <li><b>pains.md</b> <span>— боли, повтор = счётчик</span></li>
+        <li><b>combos.md</b> <span>— связки по вашим замерам</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="quote">
+    <b>Пакет — газета за сегодня:</b> прочитали и выбросили.<br>
+    <b>Банки — библиотека:</b> растут с каждым анализом и работают годами.
+  </div>
+
+  <h2>Коротко в цифрах</h2>
+  <div class="facts">
+    <div class="fact"><span class="val">20</span><span class="cap">роликов в разборе</span></div>
+    <div class="fact"><span class="val">15</span><span class="cap">хуков разобрано глазами</span></div>
+    <div class="fact"><span class="val">1,5–2 ч</span><span class="cap">на прогон</span></div>
+    <div class="fact"><span class="val">$12</span><span class="cap">в месяц на нишу</span></div>
+  </div>
+
+  <footer>
+    Отбор идёт по силе залёта <code>ln(просмотры ÷ подписчики) × ln(подписчики)</code>, а не по сырым просмотрам:
+    ролик на миллион у миллионника сработал именем, ролик на 50 тысяч у автора с пятью тысячами подписчиков — форматом.
+    Подробности — в <code>РУКОВОДСТВО.md</code>.
+  </footer>
+
+</div>

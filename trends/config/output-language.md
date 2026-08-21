@@ -22,7 +22,8 @@
 |---|---|
 | `ПАКЕТ-<товар>.md` | язык результата |
 | `АНАЛИЗ-НЕДЕЛИ-<товар>.md` | язык результата |
-| банки: `hooks` `development` `endings` `techniques` `fails` `combos` | язык результата |
+| банки: `hooks` `development` `endings` `techniques` `fails` `pains` `combos` | язык результата |
+| `ЦИТАТЫ-<дата>.md` | заголовки и блоки на языке результата, цитаты — как есть |
 | раскадровки в `refs/` | язык результата |
 | `card.md`, `claims.md`, `visual-book.md` | язык результата |
 
