@@ -94,7 +94,7 @@ flowchart TD
 Скажите Claude:
 
 > Скачай репозиторий https://github.com/<ВАШ-НИК>/trend-analysis
-> в папку C:\Ferma\trend-analysis. Скопируй все файлы из папки agents
+> в мою рабочую папку. Скопируй все файлы из папки agents
 > в мою папку агентов Claude Code. Затем поставь yt-dlp ночной сборки
 > и faster-whisper, проверь, что ffmpeg доступен, и разложи config
 > и lib в рабочую папку завода. Скажи, чего не хватает.
