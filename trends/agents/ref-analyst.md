@@ -13,9 +13,9 @@ model: sonnet
 ## Перед работой прочитай
 
 1. `C:\Ferma\factory\CLAUDE.md` — языки, границы
-2. `C:\Ferma\factory\config\skills\video-director\references\hooks.md` —
+2. `C:\Ferma\factory\config\hook-types.md` —
    справочник типов крючка; тип называй только из него
-3. `config\skills\video-director\references\retention-payoff.md` — удержание
+3. `config\retention-payoff.md` — удержание
 4. карточку товара `products\<товар>\card.md`
 5. Закрытый список десяти форматов: Тест на себе · Обзор товара ·
    До / после · Польза-гайд · Находка · POV · Закулисье · Распаковка ·

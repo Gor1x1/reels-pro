@@ -61,7 +61,7 @@
 ## Правила письма
 
 Армянский — по `config/armenian-terms.md` (термины аналитики)
-и `config/skills/creator-tz-new-full/references/armenian_style.md`
+и `config/armenian-style.md`
 (грамматика и живость слов; литературная «է», простые слова, короткие
 предложения).
 
