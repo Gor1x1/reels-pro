@@ -229,7 +229,53 @@ export const nightGold: Style = {
   motion: { zoomAmount: 1.06, zoomFrames: 26, captionPopScale: 0.95 },
 };
 
+/**
+ * 9. Цех — стиль личного бренда владельца. Тёмный графит и холодный экранный
+ * акцент вместо оранжевого: оранжевым сделаны все ролики конкурентов,
+ * и на ленте они сливаются в один. Расчёт на то, что за спиной автора стоит
+ * настоящая ферма телефонов — фактура, которой у конкурентов нет.
+ */
+export const cex: Style = {
+  ...base,
+  id: "cex",
+  name: "Цех",
+  use: "личный бренд, доказательство системой, продажа курса",
+  accent: "#b6ff3a",
+  accent2: "#25d0ff",
+  ink: "#0b0d0e",
+  pacing: "fast",
+  caption: { kind: "punch", fontSize: 50, lift: 6, align: "center",
+             plate: "rgba(8,10,11,.72)", radius: 12, stroke: 0, uppercase: true, maxWidth: 630 },
+  punch: { fontSize: 80, stroke: 0, top: 220, underline: false, twoTone: true },
+  decor: { brackets: false, bokeh: 0, progressBar: true, badge: true, vignette: 0.32 },
+  motion: { zoomAmount: 1.08, zoomFrames: 12, captionPopScale: 0.72 },
+};
+
+/**
+ * 10. Светлый разбор — белый фон, карточки интерфейсов, говорящий в круге
+ * снизу. Формат объяснения, где главное — схема, а не лицо.
+ */
+export const lightTalk: Style = {
+  ...base,
+  id: "light-talk",
+  name: "Светлый разбор",
+  use: "объяснение инструмента, схемы, цифры, уроки курса",
+  accent: "#1f6feb",
+  accent2: "#ff7a45",
+  ink: "#eef1f4",
+  textOn: "#10131a",
+  textOff: "rgba(16,19,26,.45)",
+  pacing: "normal",
+  caption: { kind: "plate", fontSize: 40, lift: 10, align: "center",
+             plate: "rgba(255,255,255,.9)", radius: 12, stroke: 0, uppercase: false, maxWidth: 600 },
+  punch: { fontSize: 68, stroke: 0, top: 170, underline: false, twoTone: true },
+  decor: { brackets: false, bokeh: 0, progressBar: true, badge: false, vignette: 0.06 },
+  motion: { zoomAmount: 1.05, zoomFrames: 20, captionPopScale: 0.9 },
+};
+
 export const STYLES: Record<string, Style> = {
+  [cex.id]: cex,
+  [lightTalk.id]: lightTalk,
   [warmStudio.id]: warmStudio,
   [boldOrange.id]: boldOrange,
   [cleanMinimal.id]: cleanMinimal,

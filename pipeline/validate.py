@@ -45,7 +45,8 @@ except ImportError:  # запуск из другой папки
     from script2spec import TAIL_BAD
 
 STYLES = {"warm-studio", "bold-orange", "clean-minimal", "neon-night",
-          "fresh-mint", "soft-cream", "mono-punch", "night-gold"}
+          "fresh-mint", "soft-cream", "mono-punch", "night-gold",
+          "cex", "light-talk"}
 PACINGS = {"calm", "normal", "fast", "punch"}
 ANIMS = {"karaoke", "word-pop", "blur-in", "mask-wipe", "typewriter",
          "highlight", "stagger-up", "glow", "zoom-punch"}

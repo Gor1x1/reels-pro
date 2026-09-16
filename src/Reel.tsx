@@ -29,6 +29,7 @@ import {
   type KBlock,
 } from "./kit/Kit";
 import { BeforeAfter, CountUp, OfferPlate, Pointer, QuoteCard, StepBadge, type Side } from "./kit/Product";
+import { Talk, type Face, type Layer as TalkLayer } from "./talk/Talk";
 
 /** Координаты макета. Кадр вывода задаётся в Root и может быть больше. */
 export const DESIGN = { w: 720, h: 1280 };
@@ -119,6 +120,11 @@ export type Scene = Common &
         cover?: { y: number; h: number; solid?: boolean };
       }
     | { type: "speaker"; nameAt?: number; nameDur?: number; punches?: Punchline[] }
+    /**
+     * Говорящий со слоями: кадр идёт непрерывно, графика приходит поверх.
+     * Основной формат профессиональных роликов — см. `talk/Talk.tsx`.
+     */
+    | { type: "talk"; src: string; in?: number; volume?: number; layers?: TalkLayer[]; face?: Face }
     | { type: "broll"; src: string; isVideo?: boolean; in?: number; label?: string }
     | { type: "compare"; before: Side; after: Side; at?: number; wipe?: number; axis?: "vertical" | "horizontal" }
     | {
@@ -134,6 +140,8 @@ export type Scene = Common &
         volume?: number;
         /** артикул товара — покупатель ищет по нему на маркетплейсе */
         sku?: string;
+        /** верх блока призыва в долях кадра: ниже лица, если под призывом говорящий */
+        y?: number;
       }
   );
 
@@ -516,6 +524,23 @@ const Cta: React.FC<{ spec: Spec; sc: Extract<Scene, { type: "cta" }>; fps: numb
   const skuText = `${SKU_LABEL[lang]} ${sc.sku ?? ""}`;
   // 60 — горизонтальные поля плашки, 48 — зазор до краёв кадра
   const skuSize = fitFontSize(skuText, font, 900, 56, DESIGN.w - 48 - 60);
+  // Призыв бывает длинным вопросом, а не двумя словами. Фиксированный кегль
+  // рвал такую строку на четыре и выталкивал за кадр: делим по пробелу у
+  // середины и подгоняем кегль по длинной половине под ширину кадра.
+  const longerHalf = (text: string) => {
+    const words = text.split(" ");
+    if (words.length < 3) return text;
+    let best = text;
+    for (let i = 1; i < words.length; i++) {
+      const a = words.slice(0, i).join(" ");
+      const b = words.slice(i).join(" ");
+      const longer = a.length >= b.length ? a : b;
+      if (longer.length < best.length) best = longer;
+    }
+    return best;
+  };
+  const line1Size = fitFontSize(longerHalf(sc.line1), font, 900, 100, DESIGN.w - 80, 44);
+  const line2Size = sc.line2 ? fitFontSize(longerHalf(sc.line2), font, 900, 112, DESIGN.w - 80, 48) : 112;
 
   return (
     <AbsoluteFill style={{ background: st.ink }}>
@@ -557,8 +582,9 @@ const Cta: React.FC<{ spec: Spec; sc: Extract<Scene, { type: "cta" }>; fps: numb
       <div
         style={{
           position: "absolute",
-          top: 300,
+          top: sc.y !== undefined ? sc.y * DESIGN.h : 300,
           width: "100%",
+          padding: "0 40px",
           textAlign: "center",
           scale: interpolate(frame, [0, 12], [2.4, 1], { ...clamp, easing: EASE }),
           opacity: interpolate(frame, [0, 6], [0, 1], clamp),
@@ -568,7 +594,7 @@ const Cta: React.FC<{ spec: Spec; sc: Extract<Scene, { type: "cta" }>; fps: numb
           style={{
             fontFamily: font,
             fontWeight: 900,
-            fontSize: 100,
+            fontSize: line1Size,
             lineHeight: 0.98,
             color: st.textOn,
             textTransform: "uppercase",
@@ -583,7 +609,7 @@ const Cta: React.FC<{ spec: Spec; sc: Extract<Scene, { type: "cta" }>; fps: numb
             style={{
               fontFamily: font,
               fontWeight: 900,
-              fontSize: 112,
+              fontSize: line2Size,
               lineHeight: 0.98,
               color: st.accent,
               textTransform: "uppercase",
@@ -769,6 +795,8 @@ const SceneBody: React.FC<{ spec: Spec; sc: Scene; fps: number }> = ({ spec, sc,
         <Clip spec={spec} sc={sc} fps={fps} />
       ) : sc.type === "speaker" ? (
         <Speaker spec={spec} sc={sc} fps={fps} />
+      ) : sc.type === "talk" ? (
+        <Talk sc={sc} styleId={spec.style} lang={lang} fps={fps} durF={sceneFrames(sc, fps)} />
       ) : sc.type === "broll" ? (
         <Broll spec={spec} sc={sc} fps={fps} />
       ) : sc.type === "compare" ? (

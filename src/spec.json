@@ -1,101 +1,175 @@
 {
-  "tz_id": "VOICE-HOOK-01",
-  "video_id": "VOICE-HOOK-01",
-  "article": "287963132",
-  "style": "fresh-mint",
+  "tz_id": "R1",
+  "video_id": "R1-CEX-v2",
+  "style": "cex",
   "pacing": "fast",
   "lang": "hy",
   "fps": 30,
   "platform": "multi",
-  "captionAnim": "karaoke",
-  "voice": "voice.wav",
-  "voiceVolume": 1.0,
-  "music": "music.mp3",
-  "musicVolume": 0.05,
+  "captionAnim": "word-pop",
+  "music": "music-cex.mp3",
+  "musicVolume": 0.06,
   "duck": true,
-
-  "_note": "Тест озвучки: хук-вызов, синтез hy_AM-gor-medium. Сцены нарезаны по границам фраз озвучки, а не на глаз. Порядок кадров идёт за текстом: вопрос — чистая ткань, «не поверил» — перечёркнутое пятно, «одна бутылка вместо всех» — бутылка Дюрин, «взял самое худшее» — заливка кетчупом и майонезом.",
-
+  "_note": "R1 вторая версия по замечаниям владельца 16.09: резка по волне встык (pipeline/jumpcut.py, 12 кусков, пауз нет), ускорение 1.15× с сохранением тона, фон заменён с вычитанием старой стены вокруг головы и светом комнаты (matte.py --unmix --head --relight), слои и титры поставлены на слова через таблицу резки runs/2026-09-16/R1/v2/edl.json. Финал — без немого говорения: призыв на фоне офиса, голос к этому моменту уже закончился.",
   "scenes": [
     {
-      "type": "hook",
-      "sec": 3.0,
-      "src": "src/stains-demo.mp4",
-      "isVideo": true,
-      "in": 0.3,
-      "mute": false,
-      "volume": 0.1,
-      "captions": true,
-      "zooms": [[0, 1.0], [2.4, 1.08]]
-    },
-    {
-      "type": "clip",
-      "sec": 1.53,
-      "src": "src/stains-demo.mp4",
-      "in": 5.9,
-      "mute": false,
-      "volume": 0.1,
-      "zooms": [[0, 1.06], [1.5, 1.0]]
-    },
-    {
-      "type": "clip",
-      "sec": 2.49,
-      "src": "src/stains-demo.mp4",
-      "in": 8.2,
-      "enter": "whip",
-      "mute": false,
-      "volume": 0.1
-    },
-    {
-      "type": "clip",
-      "sec": 3.68,
-      "src": "src/stains-demo.mp4",
-      "in": 21.8,
-      "enter": "fade",
-      "mute": false,
-      "volume": 0.1,
-      "zooms": [[0, 1.0], [3.6, 1.09]]
-    },
-    {
-      "type": "clip",
-      "sec": 2.19,
-      "src": "src/stains-demo.mp4",
-      "in": 27.9,
-      "enter": "whip",
-      "mute": false,
-      "volume": 0.12,
-      "zooms": [[0, 1.05], [2.1, 1.0]]
-    },
-    {
-      "type": "clip",
-      "sec": 3.94,
-      "src": "src/stains-demo.mp4",
-      "in": 11.6,
-      "enter": "fade",
-      "mute": false,
-      "volume": 0.12,
-      "zooms": [[0, 1.0], [3.9, 1.07]]
-    },
-    {
-      "type": "clip",
-      "sec": 1.81,
-      "src": "src/stains-demo.mp4",
-      "in": 15.3,
-      "mute": false,
-      "volume": 0.1,
-      "zooms": [[0, 1.07], [1.8, 1.0]]
+      "type": "talk",
+      "sec": 23.58,
+      "src": "src/r1v2-fon.mp4",
+      "face": {
+        "x": 0.543,
+        "y": 0.35,
+        "w": 0.323,
+        "h": 0.26
+      },
+      "zooms": [
+        [
+          0,
+          1.0
+        ],
+        [
+          2.37,
+          1.07
+        ],
+        [
+          4.4,
+          1.0
+        ],
+        [
+          14.17,
+          1.12
+        ],
+        [
+          16.04,
+          1.0
+        ],
+        [
+          19.22,
+          1.05
+        ]
+      ],
+      "layers": [
+        {
+          "kind": "stat",
+          "at": 0.55,
+          "dur": 1.8,
+          "from": 0,
+          "to": 5000,
+          "label": "ԱՄՍԱԿԱՆ ՌԻԼՍ",
+          "y": 0.49,
+          "scale": 0.85
+        },
+        {
+          "kind": "insert",
+          "at": 4.4,
+          "dur": 2.42,
+          "src": "src/prep/pexels-6602230.mp4",
+          "in": 1.0,
+          "pip": {
+            "shape": "circle",
+            "x": 0.22,
+            "y": 0.24,
+            "size": 0.36
+          }
+        },
+        {
+          "kind": "insert",
+          "at": 6.82,
+          "dur": 1.62,
+          "src": "src/prep/pexels-7234088.mp4",
+          "in": 1.5,
+          "pip": {
+            "shape": "circle",
+            "x": 0.22,
+            "y": 0.24,
+            "size": 0.36
+          }
+        },
+        {
+          "kind": "insert",
+          "at": 8.44,
+          "dur": 5.73,
+          "pip": {
+            "shape": "rect",
+            "x": 0.5,
+            "y": 0.23,
+            "size": 0.36
+          }
+        },
+        {
+          "kind": "grid",
+          "at": 8.6,
+          "dur": 2.0,
+          "from": 0,
+          "to": 3,
+          "label": "ՑԱՆՑ",
+          "y": 0.42,
+          "cell": 64
+        },
+        {
+          "kind": "grid",
+          "at": 10.67,
+          "dur": 3.45,
+          "from": 3,
+          "to": 100,
+          "label": "ԷՋ",
+          "y": 0.4,
+          "cell": 20,
+          "cols": 20
+        },
+        {
+          "kind": "kinetic",
+          "at": 15.2,
+          "dur": 0.84,
+          "word": "ՏԱՐԲԵՐՈՒԹՅՈՒՆ",
+          "times": 3,
+          "y": 0.56
+        },
+        {
+          "kind": "insert",
+          "at": 16.04,
+          "dur": 3.18,
+          "src": "src/prep/pexels-8088613.mp4",
+          "in": 2.0,
+          "pip": {
+            "shape": "circle",
+            "x": 0.5,
+            "y": 0.47,
+            "size": 0.38
+          }
+        },
+        {
+          "kind": "stat",
+          "at": 17.9,
+          "dur": 1.3,
+          "from": 0,
+          "to": 1000,
+          "label": "ԴԻՏՈՒՄ",
+          "y": 0.13,
+          "scale": 0.9
+        },
+        {
+          "kind": "stat",
+          "at": 21.0,
+          "dur": 2.55,
+          "from": 1000,
+          "to": 100000,
+          "label": "ԴԻՏՈՒՄ",
+          "y": 0.485,
+          "scale": 0.78
+        }
+      ]
     },
     {
       "type": "cta",
-      "sec": 3.16,
-      "src": "src/stains-demo.mp4",
+      "sec": 2.6,
+      "enter": "fade",
+      "src": "src/prep/pexels-853844.mp4",
       "isVideo": true,
-      "in": 31.4,
-      "mute": false,
-      "volume": 0.12,
-      "captions": true,
-      "line1": "ԴՅՈՒՐԻՆ",
-      "sku": "287963132"
+      "in": 3.0,
+      "mute": true,
+      "line1": "ՈՒԶՈ՞ՒՄ ԵՍ ՀԱՍԿԱՆԱԼ, ԹԵ ՈՆՑ Է ԱՇԽԱՏՈՒՄ",
+      "line2": "ԳՐԻ՛Ր՝ ՖԵՐՄԱ"
     }
   ]
 }

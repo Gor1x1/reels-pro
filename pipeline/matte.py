@@ -13,6 +13,7 @@
 import argparse, subprocess, sys
 import numpy as np
 import onnxruntime as ort
+import cv2
 from PIL import Image
 
 p = argparse.ArgumentParser()
@@ -41,6 +42,17 @@ p.add_argument("--feather", type=int, default=14,
                help="мягкое затухание альфы у краёв исходника, px")
 p.add_argument("--bg-zoom", type=float, default=1.0, help="зум фона (композиция без уменьшения человека)")
 p.add_argument("--bg-dx", type=int, default=0, help="сдвиг фона по X")
+p.add_argument("--unmix", type=float, default=0.0,
+               help="0..1: вычесть цвет старого фона из полупрозрачного края (ореол на стене цвета кожи)")
+p.add_argument("--unmix-t", default="0.035,0.11",
+               help="пороги отличия пикселя от старого фона: ниже первого — это фон, выше второго — человек")
+p.add_argument("--head", default="",
+               help="x,y,w,h лица в долях кадра (из quality.py): вычитание фона только вокруг головы")
+p.add_argument("--relight", type=float, default=0.0,
+               help="0..1: свет сверху — ниже лица человек темнее, как в комнате с лампой")
+p.add_argument("--edge-soft", type=float, default=0.0, help="размытие кромки маски, px")
+p.add_argument("--fill-holes", type=float, default=0.0,
+               help="залить провалы маски на теле ниже подбородка; число — насколько пиксель должен отличаться от цвета стены (0.10)")
 p.add_argument("--quiet", action="store_true")
 a = p.parse_args()
 
@@ -146,6 +158,66 @@ if a.feather > 0:
         edge_mask[:f, :] *= ramp[:, None]
     # низ не смягчаем: человек «стоит» в кадре
 
+# ================= 3б. ЗОНА ГОЛОВЫ И СВЕТ =================
+# Разностный ключ работает только вокруг головы: на торсе он подхватывал
+# ошибки сети и прорезал дыру в белой футболке у движущейся руки.
+HEAD = None
+if a.head:
+    hx, hy, hw, hh = (float(v) for v in a.head.split(","))
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    x0, x1 = (hx - 0.95 * hw) * W, (hx + 0.95 * hw) * W
+    y0, y1 = (hy - 1.35 * hh) * H, (hy + 0.25 * hh) * H
+    HEAD = ((xx > x0) & (xx < x1) & (yy > y0) & (yy < y1)).astype(np.float32)
+    HEAD = cv2.GaussianBlur(HEAD, (0, 0), 20)
+
+# Свет комнаты: лицо под лампой, ниже постепенно темнее. Плоско освещённый
+# человек на тёмном фоне с огнями выглядит вклеенным.
+LIGHT = None
+if a.relight > 0:
+    yy = np.linspace(0, 1, H, dtype=np.float32)[:, None]
+    fy = float(a.head.split(",")[1]) if a.head else 0.35
+    ramp = np.clip((yy - fy) / (1.0 - fy), 0, 1)
+    LIGHT = (1.0 - a.relight * ramp ** 1.2)[..., None] * np.ones((1, W, 1), np.float32)
+
+HOLES_FILLED = [0]
+
+# Где человек большую часть ролика — быстрый проход в половинном разрешении.
+# Торс говорящего почти неподвижен, двигаются руки: пиксель, который в
+# большинстве кадров был человеком, — это тело. Провал маски внутри этой
+# «средней фигуры» и есть брак сети, а не просвет.
+PRIOR = None
+if a.fill_holes > 0:
+    hw_, hh_ = W // 2, H // 2
+    prd = subprocess.Popen(f'ffmpeg -v error -i "{a.video}" -vf scale={hw_}:{hh_} -f rawvideo -pix_fmt rgb24 -',
+                           shell=True, stdout=subprocess.PIPE, bufsize=hw_ * hh_ * 3 * 4)
+    prec = [np.zeros((1, 1, 1, 1), np.float32)] * 4
+    acc = np.zeros((hh_, hw_), np.float32)
+    cnt = 0
+    k = 0
+    dsr_half = np.array([min(1.0, a.downsample * 2)], np.float32)
+    while True:
+        raw = prd.stdout.read(hw_ * hh_ * 3)
+        if len(raw) < hw_ * hh_ * 3:
+            break
+        fr = np.frombuffer(raw, np.uint8).reshape(hh_, hw_, 3).astype(np.float32) / 255.0
+        src = fr.transpose(2, 0, 1)[None]
+        _, pha, *prec = sess.run(["fgr", "pha", "r1o", "r2o", "r3o", "r4o"],
+                                 {"src": src, "r1i": prec[0], "r2i": prec[1], "r3i": prec[2], "r4i": prec[3],
+                                  "downsample_ratio": dsr_half})
+        if k % 3 == 0:
+            acc += (pha[0, 0] > 0.5)
+            cnt += 1
+        k += 1
+    prd.stdout.close()
+    prd.wait()
+    if cnt:
+        PRIOR = cv2.resize(acc / cnt, (W, H), interpolation=cv2.INTER_LINEAR) > 0.6
+        log(f"средняя фигура: {cnt} кадров, тело занимает {PRIOR.mean() * 100:.0f}% кадра")
+HEAD_BOX = None
+if a.head:
+    _hx, _hy, _hw, _hh = (float(v) for v in a.head.split(","))
+    HEAD_BOX = (_hx * W, _hy * H, _hw * W, min((_hy + 0.6 * _hh) * H, H - 1))
+
 # ================= 4. ПРОХОД =================
 gr = np.array([float(x) for x in a.grade.split(",")], np.float32).reshape(1, 1, 3)
 rec = [np.zeros((1, 1, 1, 1), np.float32)] * 4
@@ -180,6 +252,80 @@ while True:
         fg += (exc * a.despill * 0.35)[..., None]
         fg = np.clip(fg, 0, 1)
 
+    # Вычитание известного фона. Нейросеть на стене цвета кожи отдаёт край
+    # слишком широким: над лысиной и по плечам остаётся полупрозрачный кусок
+    # стены, который на новом фоне выглядит бежевым «шлемом». Кеинг-программы
+    # решают это знанием старого фона: оцениваем цвет стены вокруг человека,
+    # продолжаем его под край и в неуверенной полосе:
+    #   — пиксель, почти совпадающий со стеной, перестаёт быть человеком;
+    #   — цвет оставшегося края очищается от примеси стены.
+    if a.unmix > 0:
+        k = 4
+        small = cv2.resize(frame, (W // k, H // k), interpolation=cv2.INTER_AREA)
+        wm = cv2.resize((alpha < 0.05).astype(np.float32), (W // k, H // k), interpolation=cv2.INTER_AREA)
+        num = cv2.GaussianBlur(small * wm[..., None], (0, 0), 14)
+        den = cv2.GaussianBlur(wm, (0, 0), 14)[..., None]
+        B = cv2.resize(num / np.maximum(den, 1e-4), (W, H), interpolation=cv2.INTER_LINEAR)
+        t0, t1 = (float(x) for x in a.unmix_t.split(","))
+        d = np.sqrt(((frame - B) ** 2).sum(axis=2))
+        ad = np.clip((d - t0) / (t1 - t0), 0, 1)
+        ad = cv2.GaussianBlur(ad, (0, 0), 1.2)
+        band = (alpha > 0.02) & (alpha < 0.98)
+        if HEAD is not None:
+            band = band & (HEAD > 0.5)
+        # Разностный ключ там, где он уверен: явно не стена — непрозрачно
+        # (тёмные волосы на бежевой стене), почти стена — прозрачно. Сомнительное
+        # оставляем сети. Внутрь лица (альфа ≥ 0.98) ключ не лезет: кожа по цвету
+        # близка к стене и получила бы дыры.
+        conf = np.clip(np.abs(ad - 0.5) * 2, 0, 1)
+        refined = np.where(band, alpha * (1 - conf) + ad * conf, alpha)
+        alpha = alpha + (refined - alpha) * a.unmix
+        # Цвет человека — из исходного кадра, а не из предсказания сети:
+        # на рилсе 1 сеть перекрасила короткую тёмную стрижку в серо-зелёную
+        # «шапку», хотя маску волос нашла верно. В полосе края — очищенный цвет.
+        am = np.maximum(alpha, 0.15)[..., None]
+        F = np.clip((frame - (1 - alpha)[..., None] * B) / am, 0, 1)
+        own = np.where(band[..., None], F, frame)
+        fg = fg + (own - fg) * a.unmix
+
+    # Провалы маски на теле. На белой футболке при движении руки сеть делает
+    # большие куски торса полупрозрачными — и на груди, и у нижнего края кадра,
+    # сквозь человека просвечивает новый фон. Приём ротоскопинга: ниже
+    # подбородка всё, что в строке лежит между левым и правым краем фигуры, —
+    # это человек. Исключение — пиксели цвета старой стены: настоящий просвет
+    # между рукой и телом. Цвет стены — медиана уверенного фона над плечами,
+    # а не локальная оценка: локальную портят сами провалы.
+    if a.fill_holes > 0 and HEAD_BOX is not None:
+        top_zone = (alpha < 0.05)
+        top_zone[int(H * 0.35):, :] = False
+        if top_zone.sum() > 500:
+            wall = np.median(frame[top_zone], axis=0)
+            chin = int(HEAD_BOX[3])
+            sub = alpha[chin:, :]
+            solid = sub > 0.6
+            has = solid.any(axis=1)
+            left = np.where(has, solid.argmax(axis=1), W)
+            right = np.where(has, W - 1 - solid[:, ::-1].argmax(axis=1), -1)
+            # к низу кадра торс не сужается: границы только расширяются вниз,
+            # иначе провал у нижнего края выпадает из заливки
+            cols = np.arange(W)[None, :]
+            inside = (cols >= left[:, None]) & (cols <= right[:, None])
+            if PRIOR is not None:
+                # контур в строке ловит провал внутри фигуры этого кадра,
+                # средняя фигура — провал у края, где контур кадра сам сломан
+                inside = inside | PRIOR[chin:, :]
+            dist = np.sqrt(((frame[chin:, :, :] - wall) ** 2).sum(axis=2))
+            fill = inside & (sub < 0.95) & (dist > a.fill_holes)
+            if fill.any():
+                fill = cv2.morphologyEx(fill.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8)) > 0
+                fill &= inside
+                sub_new = np.where(fill, 1.0, sub)
+                alpha = alpha.copy()
+                alpha[chin:, :] = cv2.GaussianBlur(sub_new.astype(np.float32), (0, 0), 1.0) * fill + sub_new * (~fill)
+                fg = fg.copy()
+                fg[chin:, :, :] = np.where(fill[..., None], frame[chin:, :, :], fg[chin:, :, :])
+                HOLES_FILLED[0] += int(fill.sum())
+
     # подрезка полупрозрачной кромки
     if a.shrink > 0:
         alpha = np.clip((alpha - a.shrink) / (1.0 - a.shrink), 0, 1)
@@ -205,8 +351,12 @@ while True:
             ca[dy0:dy0 + ch, dx0:dx0 + cw] = np.asarray(ai)[sy0:sy0 + ch, sx0:sx0 + cw] / 255.0
         fg, alpha = cf, ca
 
+    if a.edge_soft > 0:
+        alpha = cv2.GaussianBlur(alpha, (0, 0), a.edge_soft)
     al = alpha[..., None]
     fg = np.clip(fg * gr * a.exposure, 0, 1)
+    if LIGHT is not None:
+        fg = np.clip(fg * LIGHT, 0, 1)
 
     # light wrap: свет фона ложится на кромку
     if a.lightwrap > 0:
@@ -222,4 +372,6 @@ while True:
 wr.stdin.close(); wr.wait(); rd.wait()
 if BG is None:
     bgrd.kill()
+if a.fill_holes > 0:
+    log(f"залито дыр в маске: {HOLES_FILLED[0]} пикселей за ролик")
 log(f"готово: {n} кадров → {a.out}")
