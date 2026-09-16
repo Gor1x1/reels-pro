@@ -26,7 +26,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from matte_core import (probe, reader, read_frame, build_plate, PlateTracker, refine_with_plate,
-                        foreground_colors, ChatterReducer, Background, choke)
+                        foreground_colors, ChatterReducer, Background, choke, repair_holes)
 
 p = argparse.ArgumentParser()
 p.add_argument("--video", required=True)
@@ -265,6 +265,8 @@ while True:
         alpha = refine_with_plate(I, a_nn, B, tracker.conf_full, strength=a.plate_strength)
         tick("ключ по стене")
     alpha = chatter(I, alpha)
+    if tracker is not None:
+        alpha, _ = repair_holes(I, alpha, B)      # страховка: дыра могла прийти из прошлого кадра
     tick("дрожь")
     if a.shrink > 0:
         alpha = np.clip((alpha - a.shrink) / (1.0 - a.shrink), 0, 1)

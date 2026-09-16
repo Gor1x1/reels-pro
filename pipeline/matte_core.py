@@ -217,6 +217,92 @@ class PlateTracker:
 
 # ========================= КЛЮЧ ПО ИЗВЕСТНОМУ ФОНУ =========================
 
+def enclosed(solid):
+    """
+    Силуэт с закрытыми дырами. Фон — то, что связано с верхним, левым или правым
+    краем кадра; всё, что замкнуто внутри человека, — внутри, даже если сеть там
+    дала прозрачность. Нижний край не считается фоном: человек стоит, его срезает
+    низ кадра.
+    """
+    h, w = solid.shape
+    n, lab, st, _ = cv2.connectedComponentsWithStats((solid == 0).astype(np.uint8), connectivity=4)
+    left, top, cw = st[:, cv2.CC_STAT_LEFT], st[:, cv2.CC_STAT_TOP], st[:, cv2.CC_STAT_WIDTH]
+    outside = (top == 0) | (left == 0) | (left + cw >= w)
+    outside[0] = False
+    return (solid > 0) | ~outside[lab]
+
+
+def repair_holes(I, a, B, strength=1.0):
+    """
+    Дыры в готовой маске: замкнутые внутри силуэта пиксели, явно не цвета стены,
+    становятся человеком. Для масок, посчитанных раньше, и как страховка после
+    сглаживания во времени.
+    """
+    H, W = a.shape
+    hw, hh = W // 2, H // 2
+    a_half = cv2.resize(a, (hw, hh), interpolation=cv2.INTER_AREA)
+    solid = (a_half > 0.5).astype(np.uint8)
+    inside = enclosed(solid) & (a_half < 0.97)
+    if not inside.any():
+        return a, 0
+    # Маленькая замкнутая дыра (до ~120×120 px) — почти всегда провал сети в одежде:
+    # её закрываем всю, кроме пикселей, точно совпадающих со стеной. Большая — может
+    # быть настоящим просветом между рукой и телом, там нужен явный «не цвет стены».
+    holes = (enclosed(solid) & (solid == 0)).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(holes, connectivity=8)
+    small = np.zeros(n, bool)
+    small[1:] = st[1:, cv2.CC_STAT_AREA] < 4000
+    small_h = cv2.dilate((small[lab] & (holes > 0)).astype(np.uint8), _ELL7)
+    inside = cv2.dilate(inside.astype(np.uint8), _ONES3)
+    m = cv2.resize(inside, (W, H), interpolation=cv2.INTER_NEAREST) > 0
+    ys, xs = np.nonzero(m & (a < 0.97))
+    if len(ys) == 0:
+        return a, 0
+    D = I[ys, xs] - B[ys, xs]
+    dist = np.sqrt((D * D).sum(axis=1))
+    Ic, Bc = I[ys, xs], B[ys, xs]
+    lumI = Ic.mean(axis=1)
+    lumB = np.maximum(Bc.mean(axis=1), 1e-3)
+    k = lumI / lumB
+    chroma = np.sqrt(((Ic / np.maximum(lumI, 1e-3)[:, None] - Bc / lumB[:, None]) ** 2).sum(axis=1))
+    shadow = smoothstep(k, 0.35, 0.5) * (1 - smoothstep(k, 0.9, 0.98)) * (1 - smoothstep(chroma, 0.06, 0.12))
+    # цвет человека рядом с дырой: одежда вокруг провала в футболке, кожа и
+    # футболка вокруг просвета между рукой и телом. Пиксель закрывается, только
+    # если по цвету он ближе к человеку рядом, чем к стене: на рилсе 1 без этого
+    # в просвет у руки ложились бежевые крапинки стены в тени.
+    I_half = cv2.resize(I, (hw, hh), interpolation=cv2.INTER_AREA)
+    mf = (a_half > 0.95).astype(np.float32)
+    num = cv2.GaussianBlur(I_half * mf[..., None], (0, 0), 8)
+    den = cv2.GaussianBlur(mf, (0, 0), 8)
+    yh, xh = np.minimum(ys // 2, hh - 1), np.minimum(xs // 2, hw - 1)
+    Fl = num[yh, xh] / np.maximum(den[yh, xh], 1e-4)[:, None]
+    d_person = np.sqrt(((Ic - Fl) ** 2).sum(axis=1))
+    # нужен явный запас: белая футболка отражает свет лампы на стену рядом, и стена
+    # в просвете у руки светлее подложки — по цвету как рука в тени (разница 0.04–0.06),
+    # а у настоящей дыры в футболке запас около 0.24
+    closer = smoothstep(dist - d_person, 0.08, 0.16)
+    fill_big = smoothstep(dist, 0.12, 0.22) * (1 - shadow) * closer
+    in_small = small_h[yh, xh] > 0
+    # тень человека на стене того же оттенка, что стена, — не человек, даже в
+    # маленьком просвете: кожа руки в тени и стена в тени по цвету почти равны
+    fill = np.where(in_small, np.maximum(closer * (1 - shadow), fill_big), fill_big) * strength
+    # решение по всей дыре: маленькая дыра, закрытая больше чем на 60%, — провал в
+    # одежде целиком; иначе в её середине остаётся точка, где цвет рядом смешан с рукой
+    lab_px = lab[yh, xh]
+    if n > 1:
+        tot = np.bincount(lab_px, weights=fill, minlength=n)
+        cnt = np.bincount(lab_px, minlength=n)
+        share = tot / np.maximum(cnt, 1)
+        whole = small & (share >= 0.6)
+        whole[0] = False
+        fill = np.where(whole[lab_px], strength, fill)
+    out = a.copy()
+    new = np.maximum(a[ys, xs], fill)
+    fixed = int((new - a[ys, xs] > 0.3).sum())
+    out[ys, xs] = new
+    return out, fixed
+
+
 def refine_with_plate(I, a_nn, B, conf, sep=(0.05, 0.15), strength=1.0):
     """
     Кадр — смесь человека F и стены B: I = a·F + (1-a)·B. Стена известна, цвет
@@ -231,7 +317,10 @@ def refine_with_plate(I, a_nn, B, conf, sep=(0.05, 0.15), strength=1.0):
     H, W = a_nn.shape
     hw, hh = W // 2, H // 2
     a_half = cv2.resize(a_nn, (hw, hh), interpolation=cv2.INTER_AREA)
-    near_h = cv2.dilate((a_half > 0.1).astype(np.uint8), _ELL25)
+    # «рядом с человеком» — от силуэта с закрытыми дырами: на рилсе 1 сеть делала
+    # в футболке дыру шире радиуса расширения, её середина выпадала из проверки,
+    # и сквозь грудь светила лампа нового фона
+    near_h = cv2.dilate(enclosed((a_half > 0.1).astype(np.uint8)).astype(np.uint8), _ELL25)
     # середина фигуры, где сеть уверена, ключом не режется: кожа по цвету как
     # стена, и без защиты через лицо просвечивал фон
     inner_h = cv2.erode((a_half > 0.97).astype(np.uint8), _ELL7)
@@ -278,7 +367,8 @@ def refine_with_plate(I, a_nn, B, conf, sep=(0.05, 0.15), strength=1.0):
     a = ac + w * np.where(akb < ac, cc, 1.0) * (akb - ac)
     # 2) дыры: пиксель явно не цвета стены рядом с фигурой — это человек
     #    (белая футболка, которую сеть сделала полупрозрачной у движущейся руки)
-    hole = smoothstep(dist, 0.12, 0.22) * (1 - shadow) * strength
+    d_person = np.sqrt(((Ic - Fh) ** 2).sum(axis=1))
+    hole = smoothstep(dist, 0.12, 0.22) * (1 - shadow) * smoothstep(dist - d_person, 0.04, 0.12) * strength
     a = np.maximum(a, hole)
     out = a_nn.copy()
     out[ys, xs] = np.clip(a, 0.0, 1.0)

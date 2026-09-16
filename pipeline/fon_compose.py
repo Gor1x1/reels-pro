@@ -24,7 +24,7 @@ import numpy as np
 import cv2
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from matte_core import probe, reader, read_frame, Background, PlateTracker, foreground_colors, choke
+from matte_core import probe, reader, read_frame, Background, PlateTracker, foreground_colors, choke, repair_holes
 
 p = argparse.ArgumentParser()
 src = p.add_mutually_exclusive_group(required=True)
@@ -120,6 +120,7 @@ if a.still is None:
 
 started = time.time()
 n = 0
+holes_fixed = frames_fixed = 0
 while n < N:
     fgp = read_frame(rf, W, H)
     raw = ra.stdout.read(W * H)
@@ -130,6 +131,10 @@ while n < N:
         # край из исходника: подрезка маски и очищенный от стены цвет
         I = fgp
         Bp = tracker.frame(I, al) if tracker else None
+        if Bp is not None:
+            al, fixed = repair_holes(I, al, Bp)
+            holes_fixed += fixed
+            frames_fixed += fixed > 200
         al = choke(al, a.choke, a.edge_soft)
         fgp = foreground_colors(I, al, plate=Bp) * al[..., None]
     bg = BG.next()
@@ -174,4 +179,6 @@ BG.close()
 if wr:
     wr.stdin.close()
     wr.wait()
+if a.video and tracker:
+    log(f"дыры в маске закрыты: {frames_fixed} кадров, {holes_fixed} пикселей")
 log(f"готово: {n} кадров за {(time.time() - started):.0f} с → {a.out}")
