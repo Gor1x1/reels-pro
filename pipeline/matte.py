@@ -17,6 +17,9 @@
   python matte.py --video in.mp4 --bg bg.mp4 --out out.mp4
   python matte.py --video in.mp4 --bg green --from 3 --to 6 --out check.mp4 --check runs/.../fon   # проба края
 """
+if __name__ == "__main__":  # М-44: мимо очереди тяжёлое не идёт — перезапуск через неё
+    import ochered
+    ochered.v_ocheredi()
 import argparse, subprocess, sys, time
 from pathlib import Path
 import numpy as np

@@ -19,6 +19,9 @@ matte.py один раз вырезает человека (--fg-out слой, -
 С --video край пересобирается здесь же: подрезка маски и цвет края по подложке стены.
 Нейросеть второй раз не нужна — правка кромки занимает минуты, а не двадцать.
 """
+if __name__ == "__main__":  # М-44: мимо очереди тяжёлое не идёт — перезапуск через неё
+    import ochered
+    ochered.v_ocheredi()
 import argparse, subprocess, sys, time
 from pathlib import Path
 import numpy as np

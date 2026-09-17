@@ -27,6 +27,16 @@ $env:PATH = "C:\Ferma\tools\node;$ff;$env:PATH"
 $py = "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe"
 $remotion = Join-Path $root "node_modules\.bin\remotion.cmd"
 
+# М-44: сборка — тяжёлая работа, мимо очереди не идёт. Запущена мимо — перезапуск через очередь.
+if ($env:REELS_OCHERED -ne "1") {
+    $argi = foreach ($p in $PSBoundParameters.GetEnumerator()) {
+        if ($p.Value -is [System.Management.Automation.SwitchParameter]) { if ($p.Value.IsPresent) { "-$($p.Key)" } }
+        else { "-$($p.Key)"; "$($p.Value)" }
+    }
+    & $py (Join-Path $root "pipeline\ochered.py") -- powershell -NoProfile -File $PSCommandPath @argi
+    exit $LASTEXITCODE
+}
+
 Push-Location $root
 try {
     if ($Still) {

@@ -12,6 +12,9 @@
 --video и --plate-cache такие дыры закрывает сам; этот замер — для проверки маски
 до сборки и после неё.
 """
+if __name__ == "__main__":  # М-44: мимо очереди тяжёлое не идёт — перезапуск через неё
+    import ochered
+    ochered.v_ocheredi()
 import argparse, subprocess, sys
 from pathlib import Path
 import numpy as np

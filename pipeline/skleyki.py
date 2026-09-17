@@ -33,6 +33,9 @@ akcenty.json — эмоциональные акценты в секундах �
 """
 
 from __future__ import annotations
+if __name__ == "__main__":  # М-44: мимо очереди тяжёлое не идёт — перезапуск через неё
+    import ochered
+    ochered.v_ocheredi()
 
 import argparse
 import json
