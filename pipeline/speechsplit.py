@@ -52,6 +52,9 @@ import wave
 from pathlib import Path
 
 import numpy as np
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 FFMPEG = shutil.which("ffmpeg") or "ffmpeg"
 FFPROBE = shutil.which("ffprobe") or "ffprobe"

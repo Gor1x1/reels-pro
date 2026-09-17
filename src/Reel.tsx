@@ -27,6 +27,7 @@ import {
   useFont,
   zoomAt,
   type KBlock,
+  type ZoomMark,
 } from "./kit/Kit";
 import { BeforeAfter, CountUp, OfferPlate, Pointer, QuoteCard, StepBadge, type Side } from "./kit/Product";
 import { Talk, type Face, type Layer as TalkLayer } from "./talk/Talk";
@@ -77,7 +78,7 @@ type Common = {
   enter?: Enter;
   overlays?: Overlay[];
   /** зумы по смыслу: [секунда, масштаб] */
-  zooms?: [number, number][];
+  zooms?: ZoomMark[];
   captions?: boolean;
 };
 

@@ -519,15 +519,39 @@ export const NameTitle: React.FC<{ name: string; role?: string; style: Style; la
 };
 
 /* ---------- зум по смыслу ---------- */
+/**
+ * Отметка зума: `[секунда, масштаб]` или `[секунда, масштаб, кадров перехода]`.
+ * Третье число `0` — смена крупности склейкой: масштаб меняется в один кадр,
+ * без наезда. Так крупность меняется на стыке кусков речи (плейбук, М-34).
+ */
+export type ZoomMark = [number, number] | [number, number, number];
+
 /** `zoomFrames` приходит из темпа монтажа, а не из стиля: один и тот же
- *  внешний вид нужен и в спокойном обзоре, и в быстром продающем ролике. */
-export const zoomAt = (frame: number, marks: [number, number][], fps: number, zoomFrames: number) => {
-  const t = frame / fps;
-  const m = [...marks].reverse().find((x) => t >= x[0]) ?? marks[0];
-  if (!m) return 1;
-  return interpolate(frame, [m[0] * fps, m[0] * fps + zoomFrames], [1, m[1]], {
-    extrapolateRight: "clamp",
-    extrapolateLeft: "clamp",
-    easing: EASE,
-  });
+ *  внешний вид нужен и в спокойном обзоре, и в быстром продающем ролике.
+ *
+ *  Каждая отметка ведёт масштаб от того, что было на экране в её момент.
+ *  Раньше любой переход стартовал с 1.0: на рилсе 1 v4 кадр между 1.10 и 1.03
+ *  сначала отскакивал назад, а 1.07 → 1.0 падал рывком. */
+export const zoomAt = (frame: number, marks: ZoomMark[], fps: number, zoomFrames: number) => {
+  const sorted = [...marks].sort((a, b) => a[0] - b[0]);
+  let level = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    const m = sorted[i];
+    const start = m[0] * fps;
+    if (frame < start) break;
+    const frames = m.length > 2 ? (m as [number, number, number])[2] : zoomFrames;
+    if (frames <= 0) {
+      level = m[1];
+      continue;
+    }
+    // следующая отметка уже наступила — её переход стартует с уровня в её момент
+    const next = sorted[i + 1];
+    const upTo = next && frame >= next[0] * fps ? next[0] * fps : frame;
+    level = interpolate(upTo, [start, start + frames], [level, m[1]], {
+      extrapolateRight: "clamp",
+      extrapolateLeft: "clamp",
+      easing: EASE,
+    });
+  }
+  return level;
 };

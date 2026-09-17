@@ -23,6 +23,9 @@ import numpy as np
 import onnxruntime as ort
 import cv2
 from PIL import Image
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from matte_core import (probe, reader, read_frame, build_plate, PlateTracker, refine_with_plate,

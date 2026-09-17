@@ -26,6 +26,9 @@ import sys
 import tempfile
 import wave
 from pathlib import Path
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 VOICE = Path(r"C:\Ferma\factory\assets\tts\hy_AM-gor-medium.onnx")
 FFMPEG = shutil.which("ffmpeg") or "ffmpeg"

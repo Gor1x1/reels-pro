@@ -24,6 +24,9 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 FFMPEG = shutil.which("ffmpeg") or "ffmpeg"
 

@@ -35,6 +35,9 @@ import sys
 from pathlib import Path
 
 import numpy as np
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 WIN = 0.01  # окно огибающей, 10 мс
 
@@ -104,56 +107,7 @@ def clip(regions: list[list[float]], zones: list[list[float]] | None, drops: lis
     return out
 
 
-def main() -> int:
-    p = argparse.ArgumentParser(description="резка говорящей головы по волне звука")
-    p.add_argument("src")
-    p.add_argument("--keep", help="json со списком зон [[a,b],...], где брать речь")
-    p.add_argument("--drop", action="append", default=[], help="a-b: выкинуть кусок (взгляд вниз, фальстарт)")
-    p.add_argument("--on", type=float, default=-40.0, help="порог начала голоса, дБ")
-    p.add_argument("--off", type=float, default=-38.0, help="порог конца голоса, дБ: выше — резче хвост")
-    p.add_argument("--gap", type=float, default=0.12, help="паузы короче не режем, с")
-    p.add_argument("--pre", type=float, default=0.01, help="запас перед голосом, с")
-    p.add_argument("--post", type=float, default=0.02, help="запас после голоса, с")
-    p.add_argument("--min-voice", type=float, default=0.1)
-    p.add_argument("--speed", type=float, default=1.0)
-    p.add_argument("--out")
-    p.add_argument("--edl")
-    p.add_argument("--plan", action="store_true")
-    p.add_argument("--confirm-drop", action="store_true",
-                   help="голос вне зон выкинуть намеренно — только по слову владельца (М-27)")
-    a = p.parse_args()
-
-    db = envelope(a.src)
-    zones = json.loads(Path(a.keep).read_text(encoding="utf-8")) if a.keep else None
-    drops = [[float(x) for x in d.split("-")] for d in a.drop]
-    regions = voiced_regions(db, a.on, a.off, a.gap, a.min_voice)
-    segs = clip(regions, zones, drops)
-
-    # М-27: вся сказанная речь — в ролик. Голос вне зон — стоп, а не молчаливая потеря:
-    # 16.09.2026 так выкинули 6.5 с конца рилса 1, распознавание там не разобрало слова.
-    if zones:
-        def inside(a0, b0):
-            return sum(max(0.0, min(b0, zb) - max(a0, za)) for za, zb in zones)
-        lost = [(ra, rb) for ra, rb in regions if (rb - ra) - inside(ra, rb) > 0.15]
-        lost_sec = sum((rb - ra) - inside(ra, rb) for ra, rb in lost)
-        if lost_sec > 0.3:
-            print(f"СТОП: голос вне зон — {lost_sec:.1f} с речи не попадёт в ролик:", file=sys.stderr)
-            for ra, rb in lost:
-                print(f"  {ra:7.2f}-{rb:7.2f}", file=sys.stderr)
-            if not a.confirm_drop:
-                print("Это речь владельца. Расширь зоны. Выкинуть можно только по его слову: --confirm-drop",
-                      file=sys.stderr)
-                return 3
-
-    # запас по краям без наложения соседних кусков
-    padded = []
-    for i, (s, e) in enumerate(segs):
-        s2 = max(0.0, s - a.pre)
-        e2 = e + a.post
-        if padded and s2 < padded[-1][1]:
-            s2 = padded[-1][1]
-        padded.append([round(s2, 3), round(e2, 3)])
-
+def assemble(a, padded: list[list[float]]) -> int:
     total = sum(e - s for s, e in padded)
     edl, t = [], 0.0
     for s, e in padded:
@@ -192,6 +146,68 @@ def main() -> int:
     gfile.unlink(missing_ok=True)
     print(f"собрано: {a.out}")
     return 0
+
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description="резка говорящей головы по волне звука")
+    p.add_argument("src")
+    p.add_argument("--keep", help="json со списком зон [[a,b],...], где брать речь")
+    p.add_argument("--drop", action="append", default=[], help="a-b: выкинуть кусок (взгляд вниз, фальстарт)")
+    p.add_argument("--on", type=float, default=-40.0, help="порог начала голоса, дБ")
+    p.add_argument("--off", type=float, default=-38.0, help="порог конца голоса, дБ: выше — резче хвост")
+    p.add_argument("--gap", type=float, default=0.12, help="паузы короче не режем, с")
+    p.add_argument("--pre", type=float, default=0.01, help="запас перед голосом, с")
+    p.add_argument("--post", type=float, default=0.02, help="запас после голоса, с")
+    p.add_argument("--min-voice", type=float, default=0.1)
+    p.add_argument("--speed", type=float, default=1.0)
+    p.add_argument("--out")
+    p.add_argument("--edl")
+    p.add_argument("--plan", action="store_true")
+    p.add_argument("--confirm-drop", action="store_true",
+                   help="голос вне зон выкинуть намеренно — только по слову владельца (М-27)")
+    p.add_argument("--from-edl", help="собрать по готовой резке: те же куски и скорость, голос заново не ищется")
+    a = p.parse_args()
+
+    if a.from_edl:
+        # Тот же чистовик в другом разрешении — например, из 4K-исходника под наезды
+        # на крупность (М-36): куски до кадра совпадают, маска и тайминги слоёв живут.
+        old = json.loads(Path(a.from_edl).read_text(encoding="utf-8"))
+        a.speed = float(old.get("speed", a.speed))
+        return assemble(a, [list(s["src"]) for s in old["segments"]])
+
+    db = envelope(a.src)
+    zones = json.loads(Path(a.keep).read_text(encoding="utf-8")) if a.keep else None
+    drops = [[float(x) for x in d.split("-")] for d in a.drop]
+    regions = voiced_regions(db, a.on, a.off, a.gap, a.min_voice)
+    segs = clip(regions, zones, drops)
+
+    # М-27: вся сказанная речь — в ролик. Голос вне зон — стоп, а не молчаливая потеря:
+    # 16.09.2026 так выкинули 6.5 с конца рилса 1, распознавание там не разобрало слова.
+    if zones:
+        def inside(a0, b0):
+            return sum(max(0.0, min(b0, zb) - max(a0, za)) for za, zb in zones)
+        lost = [(ra, rb) for ra, rb in regions if (rb - ra) - inside(ra, rb) > 0.15]
+        lost_sec = sum((rb - ra) - inside(ra, rb) for ra, rb in lost)
+        if lost_sec > 0.3:
+            print(f"СТОП: голос вне зон — {lost_sec:.1f} с речи не попадёт в ролик:", file=sys.stderr)
+            for ra, rb in lost:
+                print(f"  {ra:7.2f}-{rb:7.2f}", file=sys.stderr)
+            if not a.confirm_drop:
+                print("Это речь владельца. Расширь зоны. Выкинуть можно только по его слову: --confirm-drop",
+                      file=sys.stderr)
+                return 3
+
+    # запас по краям без наложения соседних кусков
+    padded = []
+    for i, (s, e) in enumerate(segs):
+        s2 = max(0.0, s - a.pre)
+        e2 = e + a.post
+        if padded and s2 < padded[-1][1]:
+            s2 = padded[-1][1]
+        padded.append([round(s2, 3), round(e2, 3)])
+
+    return assemble(a, padded)
 
 
 if __name__ == "__main__":

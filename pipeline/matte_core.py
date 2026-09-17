@@ -191,8 +191,9 @@ class PlateTracker:
         self.conf_full = cv2.resize(P["conf"], (W, H), interpolation=cv2.INTER_LINEAR)
 
     def frame(self, I, a_nn):
-        q = self.q
-        w, h = self.W // q, self.H // q
+        # сетка — как у сохранённой подложки: её могли считать в 1080p, а кадр
+        # собирать в 4K под наезды (М-36)
+        h, w = self.P["plate"].shape[:2]
         Is = cv2.resize(I, (w, h), interpolation=cv2.INTER_AREA)
         As = cv2.resize(a_nn, (w, h), interpolation=cv2.INTER_AREA)
         wall = cv2.erode((As < 0.02).astype(np.uint8), np.ones((3, 3), np.uint8), iterations=2).astype(bool)

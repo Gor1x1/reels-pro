@@ -17,7 +17,7 @@ import React from "react";
 import { AbsoluteFill, Img, Sequence, staticFile, useCurrentFrame, interpolate, Easing } from "remotion";
 import { Video } from "@remotion/media";
 import { getStyle, type Lang, type Style } from "../styles";
-import { useFont, EASE, zoomAt, fitFontSize } from "../kit/Kit";
+import { useFont, EASE, zoomAt, fitFontSize, type ZoomMark } from "../kit/Kit";
 
 const DESIGN = { w: 720, h: 1280 };
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -76,9 +76,22 @@ export type TalkScene = {
   dur?: number;
   volume?: number;
   layers?: Layer[];
-  zooms?: [number, number][];
+  zooms?: ZoomMark[];
   captions?: boolean;
   face?: Face;
+  /**
+   * Где глаза на каждом куске речи: `[секунда сцены, точка]`, точка — середина
+   * между глазами в долях кадра. Меряет `pipeline/skleyki.py measure`. Кусок
+   * встык — новое положение головы, и наезд должен якориться на нём, а не на
+   * медиане всего ролика.
+   */
+  faces?: [number, Face][];
+  /**
+   * Держать глаза в одной точке экрана на склейках и наездах (точка внимания,
+   * плейбук М-33). `true` — точка по медиане `faces`, иначе заданная точка.
+   * Сдвиг возможен только в запасе наезда: при масштабе 1.0 кадр не двигается.
+   */
+  lock?: boolean | { x: number; y: number };
 };
 
 /* ---------- вспомогательное ---------- */
@@ -121,6 +134,45 @@ const pipBox = (pip: Pip) => {
 };
 
 const clampNum = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+
+/* ---------- точка внимания ---------- */
+
+/** Глаза на этом куске речи: последняя отметка `faces` до момента `t`. */
+const faceAt = (sc: TalkScene, t: number): Face | undefined => {
+  const marks = sc.faces;
+  if (!marks?.length) return sc.face;
+  let found = marks[0][1];
+  for (const [at, f] of marks) {
+    if (at > t) break;
+    found = f;
+  }
+  return found;
+};
+
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s.length ? s[Math.floor(s.length / 2)] : 0.5;
+};
+
+/**
+ * Сдвиг кадра, при котором глаза встают в точку захвата. При масштабе `z`
+ * точка кадра `p` уходит на экран в `shift + z·p`. Кадр обязан закрывать экран
+ * целиком, поэтому сдвиг живёт в пределах `[1 − z, 0]`: чем сильнее наезд,
+ * тем больше свободы. Без захвата — `undefined`, и кадр масштабируется вокруг глаз.
+ */
+const lockShift = (sc: TalkScene, eyes: Face | undefined, z: number) => {
+  if (!sc.lock || !eyes) return undefined;
+  const target =
+    sc.lock === true
+      ? sc.faces?.length
+        ? { x: median(sc.faces.map((m) => m[1].x)), y: median(sc.faces.map((m) => m[1].y)) }
+        : { x: eyes.x, y: eyes.y }
+      : sc.lock;
+  return {
+    x: clampNum(target.x - z * eyes.x, 1 - z, 0),
+    y: clampNum(target.y - z * eyes.y, 1 - z, 0),
+  };
+};
 
 /**
  * Где лежит кадр говорящего внутри окна. Правило: лицо занимает около 40%
@@ -560,7 +612,9 @@ export const Talk: React.FC<{
   // наезды по смыслу работают, пока говорящий на весь экран; в окне кадр стоит
   const zoom = zoomAt(frame, sc.zooms ?? [[0, 1]], fps, st.motion.zoomFrames);
   const zoomNow = interpolate(t, [0, 1], [zoom, 1]);
-  const origin = sc.face ? `${sc.face.x * 100}% ${sc.face.y * 100}%` : "50% 35%";
+  const eyes = faceAt(sc, frame / fps);
+  const origin = eyes ? `${eyes.x * 100}% ${eyes.y * 100}%` : "50% 35%";
+  const shift = lockShift(sc, eyes, zoomNow);
 
   const box = active ? pipBox(active.pip ?? {}) : null;
   const ring = active?.pip?.timer && box?.shape === "circle";
@@ -635,7 +689,8 @@ export const Talk: React.FC<{
             width: vw,
             height: vh,
             scale: zoomNow,
-            transformOrigin: origin,
+            transformOrigin: shift ? "0 0" : origin,
+            translate: shift ? `${shift.x * vw}px ${shift.y * vh}px` : undefined,
             maskImage: inner?.fill
               ? "linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%)"
               : undefined,

@@ -36,6 +36,10 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import sys
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 try:  # OpenCV 5 сыплет предупреждениями нового графа на каждый кадр
     cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_ERROR)

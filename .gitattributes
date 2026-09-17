@@ -1,0 +1,4 @@
+# Агенты Claude Code читаются только с LF: при CRLF и двоеточии в описании
+# агент молча не загружается (17.09.2026 так выпала вся студия montaj).
+.claude/agents/*.md text eol=lf
+SKILL.md text eol=lf

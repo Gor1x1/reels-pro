@@ -10,7 +10,8 @@ matte.py один раз вырезает человека (--fg-out слой, -
   фон в расфокусе и по яркости/теплоте под человека;
   одинаковое зерно на фоне и на человеке — чистый размытый фон за шумной съёмкой
   с телефона читается как наклейка;
-  лёгкое затемнение краёв кадра — взгляд идёт к лицу.
+  лёгкое затемнение краёв кадра — взгляд идёт к лицу;
+  снятие зелёного отлива (--despill), если снято на зелёном фоне.
 
   python fon_compose.py --video chistovik.mp4 --alpha alpha.mkv --plate-cache plate.npz --bg fon.mp4 --out talk.mp4
   python fon_compose.py ... --still 5.0 --out proba.png          # один кадр для сравнения фонов
@@ -22,6 +23,9 @@ import argparse, subprocess, sys, time
 from pathlib import Path
 import numpy as np
 import cv2
+if hasattr(sys.stdout, "reconfigure"):  # консоль cp1251 роняла вывод со знаками «→», «×», «≈»
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from matte_core import probe, reader, read_frame, Background, PlateTracker, foreground_colors, choke, repair_holes
@@ -56,6 +60,8 @@ p.add_argument("--grade", default="1.0,1.0,1.0")
 p.add_argument("--head", default="", help="x,y,w,h лица: центр света для --relight")
 p.add_argument("--relight", type=float, default=0.0)
 p.add_argument("--lightwrap", type=float, default=0.25)
+p.add_argument("--despill", type=float, default=0.0,
+               help="0..1 снятие зелёного отлива с человека — только для съёмки на зелёном фоне (М-12)")
 p.add_argument("--grain", type=float, default=0.012, help="зерно на весь кадр, СКО в долях яркости")
 p.add_argument("--quiet", action="store_true")
 a = p.parse_args()
@@ -104,9 +110,16 @@ if a.video and a.plate_cache:
     z = np.load(a.plate_cache)
     tracker = PlateTracker({"plate": z["plate"], "seen": z["seen"], "conf": z["conf"], "q": int(z["q"])}, W, H)
 rf = reader(SRC, W, H, ss=t0 if t0 else None, to=t1 if (a.t1 or a.still is not None) else None)
+# Маска может быть меньше кадра: её считают в 1080p, а кадр собирают в разрешении
+# исходника, чтобы наезд на крупность не мылил картинку (М-36). Край при этом
+# пересобирается по полному кадру, растягивается только сама маска.
+AW, AH = probe(a.alpha)[:2]
+scale_alpha = f"-vf scale={W}:{H}:flags=bicubic " if (AW, AH) != (W, H) else ""
+if scale_alpha:
+    log(f"маска {AW}x{AH} растягивается под кадр {W}x{H}")
 ra = subprocess.Popen(
     f'ffmpeg -v error {"-ss " + str(t0) + " " if t0 else ""}-i "{a.alpha}" '
-    f'{"-t " + str(t1 - t0) + " " if (a.t1 or a.still is not None) else ""}-f rawvideo -pix_fmt gray -',
+    f'{"-t " + str(t1 - t0) + " " if (a.t1 or a.still is not None) else ""}{scale_alpha}-f rawvideo -pix_fmt gray -',
     shell=True, stdout=subprocess.PIPE, bufsize=W * H * 4)
 
 wr = None
@@ -137,6 +150,13 @@ while n < N:
             frames_fixed += fixed > 200
         al = choke(al, a.choke, a.edge_soft)
         fgp = foreground_colors(I, al, plate=Bp) * al[..., None]
+    if a.despill > 0:
+        # Отлив зелёного полотна на коже, волосах и кромке: зелёный сверх среднего
+        # красного и синего уходит, часть яркости возвращается. До 17.09.2026 это
+        # было только в пробе matte.py, и на зелёной съёмке кромка в ролике зеленела.
+        rb = (fgp[..., 0] + fgp[..., 2]) * 0.5
+        exc = np.maximum(fgp[..., 1] - rb, 0.0) * a.despill
+        fgp = np.stack([fgp[..., 0], fgp[..., 1] - exc, fgp[..., 2]], axis=-1) + (exc * 0.35)[..., None]
     bg = BG.next()
     if a.bg_warm:
         bg = bg @ M.T

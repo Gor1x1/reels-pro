@@ -83,8 +83,11 @@ def search_pexels(query: str, n: int, vertical: bool, key: str) -> list[dict]:
         files = [f for f in v.get("video_files", []) if f.get("width")]
         if not files:
             continue
-        # берём лучший файл, который не больше 4K по ширине
-        best = max(files, key=lambda f: (f["width"] <= 2160, f["width"]))
+        # лучший файл не больше 4K по длинной стороне. Прежний отбор «ширина ≤ 2160»
+        # отдавал горизонтальные клипы не больше 1920×1080, и фон в 4K-сборке
+        # растягивался в 3.5 раза (рилс 1 v5, 17.09.2026)
+        best = max(files, key=lambda f: (max(f["width"], f.get("height") or 0) <= 4096,
+                                         f["width"] * (f.get("height") or 0)))
         out.append({
             "id": f"pexels:{v['id']}",
             "w": best["width"], "h": best["height"],
@@ -110,7 +113,7 @@ def search_pixabay(query: str, n: int, vertical: bool, key: str) -> list[dict]:
         best = None
         for name in ("large", "medium", "small"):
             s = streams.get(name)
-            if s and s.get("url"):
+            if s and s.get("url") and s.get("width"):
                 best = s
                 break
         if not best:
