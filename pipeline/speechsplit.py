@@ -356,6 +356,9 @@ def attack_back(db: np.ndarray, t: float, thr: float) -> float:
 
 def transcribe_chunks(src: Path, spans: list[tuple[float, float]], lang: str) -> list[str]:
     """Текст каждого куска — чтобы найти фальстарты."""
+    from transcribe import lokalnoe_razresheno  # локальный whisper заперт решением владельца
+    if not lokalnoe_razresheno():
+        raise SystemExit(3)
     try:
         from faster_whisper import WhisperModel  # type: ignore
     except ImportError:

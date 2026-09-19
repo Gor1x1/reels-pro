@@ -11,7 +11,7 @@
 
 Всё считается на процессоре: видеокарта GT 740 не тянет нейросети.
 """
-import subprocess, json
+import ctypes, json, os, subprocess
 import numpy as np
 import cv2
 
@@ -32,13 +32,20 @@ def probe(path):
     return int(st["width"]), int(st["height"]), num / max(den, 1), float(j["format"]["duration"])
 
 
-def reader(path, W, H, vf="", ss=None, to=None, loop=False):
-    pre = f"-ss {ss} " if ss is not None else ""
+def reader(path, W, H, vf="", ss=None, to=None, loop=False, threads=None, passthrough=False):
+    """threads — потолок потоков декодера: у параллельных кусков сборки фона каждый поток
+    декодера 4K держит свои кадры в памяти.
+    passthrough — кадры как в файле, без выравнивания частоты. Нужен куску, который встаёт
+    на кадр по дробному -ss: ffmpeg по умолчанию (CFR) видит первый кадр позже начала на
+    полкадра, отдаёт его дважды, и весь кусок сдвигается на кадр (18.09.2026, матирование
+    кусками на видео 10: кадры куска совпали с проходом одним процессом только со сдвигом −1)."""
+    pre = (f"-threads {threads} " if threads else "") + (f"-ss {ss} " if ss is not None else "")
     post = f"-to {to - (ss or 0)} " if to is not None else ""
     lp = "-stream_loop -1 " if loop else ""
     chain = f'-vf "{vf}" ' if vf else ""
+    vs = "-fps_mode passthrough " if passthrough else ""
     return subprocess.Popen(
-        f'ffmpeg -v error {lp}{pre}-i "{path}" {post}{chain}-f rawvideo -pix_fmt rgb24 -',
+        f'ffmpeg -v error {lp}{pre}-i "{path}" {post}{vs}{chain}-f rawvideo -pix_fmt rgb24 -',
         shell=True, stdout=subprocess.PIPE, bufsize=W * H * 3 * 4)
 
 
@@ -47,6 +54,31 @@ def read_frame(proc, W, H):
     if len(raw) < W * H * 3:
         return None
     return np.frombuffer(raw, np.uint8).reshape(H, W, 3).astype(np.float32) / 255.0
+
+
+# ============== ПАМЯТЬ И ПОТОКИ ДЛЯ СБОРКИ КУСКАМИ (matte.py --workers) ==============
+# Копии одноимённых функций fon_compose.py: тот скрипт разбирает argv на уровне модуля,
+# импортировать из него нельзя, а трогать проверенный в проде код ради общего места не стоит.
+
+def svobodno_gb() -> float:
+    """Меньшее из свободной RAM и свободной фиксации (commit): кончается фиксация —
+    память не выделяется никому, и ферме тоже, хотя RAM ещё есть."""
+    class MS(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong)] + [
+            (k, ctypes.c_ulonglong) for k in ("total", "avail", "tpf", "apf", "tv", "av", "aev")]
+    try:
+        m = MS()
+        m.dwLength = ctypes.sizeof(MS)
+        ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+        return min(m.avail, m.apf) / 2 ** 30
+    except Exception:
+        return 0.0
+
+
+def potoki_ocheredi() -> int:
+    """Сколько потоков у этой работы: очередь пишет это в OMP_NUM_THREADS."""
+    v = os.environ.get("OMP_NUM_THREADS", "") if os.environ.get("REELS_OCHERED") else ""
+    return int(v) if v.isdigit() and int(v) > 0 else (os.cpu_count() or 2)
 
 
 # ============================ ЧИСТАЯ ПОДЛОЖКА ============================
@@ -569,6 +601,15 @@ class Background:
                     self.pos = self.xf - 1
         self.pos += 1
         return fr
+
+    def skip(self, k):
+        """Пропустить k кадров фона. Картинке хватает счётчика, видео читается подряд:
+        у петли с переходом есть память."""
+        if not self.is_video:
+            self.i += max(0, int(k))
+            return
+        for _ in range(max(0, int(k))):
+            self.next()
 
     def close(self):
         if self.is_video and self.proc:

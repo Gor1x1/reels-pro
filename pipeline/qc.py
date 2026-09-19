@@ -38,8 +38,8 @@ def run(cmd: list[str]) -> str:
 def check(path: str, dark_text: bool = False) -> dict:
     checks: list[dict] = []
 
-    def add(name: str, ok: bool, got: str, want: str) -> None:
-        checks.append({"проверка": name, "ок": ok, "получено": got, "нужно": want})
+    def add(name: str, ok: bool, got: str, want: str, advisory: bool = False) -> None:
+        checks.append({"проверка": name, "ок": ok, "получено": got, "нужно": want, "совет": advisory})
 
     raw = run([FFPROBE, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", path])
     try:
@@ -61,7 +61,10 @@ def check(path: str, dark_text: bool = False) -> dict:
     fps = round(int(num) / max(int(den), 1), 2) if num.isdigit() else 0
     add("частота кадров", 24 <= fps <= 60, f"{fps} fps", "24–60 fps")
 
-    add("длительность", MIN_SEC <= dur <= MAX_SEC, f"{dur:.1f} сек", f"{MIN_SEC:.0f}–{MAX_SEC:.0f} сек")
+    add("длительность — минимум", dur >= MIN_SEC, f"{dur:.1f} сек", f"от {MIN_SEC:.0f} сек")
+    # потолок — ориентир, не гейт (решение владельца 18.09.2026): длинный ролик
+    # с целой речью не бракуется за хронометраж сам по себе
+    add("длительность — потолок", dur <= MAX_SEC, f"{dur:.1f} сек", f"до {MAX_SEC:.0f} сек", advisory=True)
     add("звуковая дорожка", a is not None, "есть" if a else "нет", "есть")
 
     if a:
@@ -117,7 +120,7 @@ def check(path: str, dark_text: bool = False) -> dict:
             risky = sum(1 for y in yavgs if y > 165) / len(yavgs)
             add("фон под субтитрами", risky < 0.35, f"светлый на {risky * 100:.0f}% кадров", "меньше 35%")
 
-    failed = [c for c in checks if not c["ок"]]
+    failed = [c for c in checks if not c["ок"] and not c["совет"]]
     return {
         "файл": Path(path).name,
         "открывается": True,
@@ -152,7 +155,7 @@ def main() -> int:
 
     print(f"\n{res['файл']} — {res['вердикт']}\n")
     for c in res["проверки"]:
-        mark = "  ок  " if c["ок"] else " БРАК "
+        mark = "  ок  " if c["ок"] else (" совет" if c["совет"] else " БРАК ")
         print(f"[{mark}] {c['проверка']:<18} {c['получено']:<16} нужно: {c['нужно']}")
     print()
 

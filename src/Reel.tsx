@@ -166,6 +166,8 @@ export type Spec = {
   /** вид анимации субтитров; не задан — берётся из стиля */
   captionAnim?: CaptionAnim;
   captionLift?: number;
+  /** отрезки в секундах, где субтитр снят: графика на экране уже говорит то же самое */
+  captionsHide?: [number, number][];
   /** основной файл для сцен speaker */
   video?: string;
   background?: string;
@@ -714,7 +716,7 @@ export const Reel: React.FC<{ spec: Spec; captions: KBlock[] }> = ({ spec, capti
    * уже стоит крупный текст — второй слой поверх него читается как ошибка
    * сборки. Сцена может переопределить это полем `captions`.
    */
-  const hidden: [number, number][] = [];
+  const hidden: [number, number][] = [...(spec.captionsHide ?? [])];
   let cursor = 0;
   for (const sc of spec.scenes) {
     const len = sceneFrames(sc, fps);

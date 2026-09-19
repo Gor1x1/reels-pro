@@ -39,6 +39,9 @@ def speech_segments(src: str, lang: str, model_size: str) -> list[dict]:
     """
     Отрезки речи с таймингами. Слова из модели не используем — только границы.
     """
+    from transcribe import lokalnoe_razresheno  # локальный whisper заперт решением владельца
+    if not lokalnoe_razresheno():
+        raise SystemExit(3)
     try:
         from faster_whisper import WhisperModel  # type: ignore
     except (ImportError, FileNotFoundError) as e:

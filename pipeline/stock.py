@@ -45,7 +45,7 @@ def load_env() -> dict[str, str]:
     env: dict[str, str] = {}
     f = ROOT / ".env"
     if f.exists():
-        for line in f.read_text(encoding="utf-8").splitlines():
+        for line in f.read_text(encoding="utf-8-sig").splitlines():  # Блокнот может дописать BOM
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)

@@ -170,6 +170,23 @@ def check(spec: dict, captions: list) -> tuple[list[str], list[str]]:
             if ov.get("kind") == "name" and not (spec.get("brand") or {}).get("name"):
                 warns.append(f"{tag}: накладка name без brand.name — ничего не покажется")
 
+        for j, lay in enumerate(sc.get("layers") or [], 1):
+            at = float(lay.get("at", 0) or 0)
+            dur = float(lay.get("dur", 0) or 0)
+            if dur <= 0:
+                errors.append(f"{tag}: слой {j} ({lay.get('kind')}) без длительности")
+            if at + dur > sec + 0.05:
+                errors.append(
+                    f"{tag}: слой {j} ({lay.get('kind')}) идёт до {at + dur:.1f} с "
+                    f"при длине сцены {sec:.1f} с — оборвётся"
+                )
+            if lay.get("kind") == "insert":
+                src = lay.get("src")
+                if not src:
+                    errors.append(f"{tag}: слой {j} (insert) без src — окно останется пустым")
+                elif duration(src) is None:
+                    errors.append(f"{tag}: слой {j} (insert) ссылается на public/{src}, которого нет")
+
     if total < MIN_SEC:
         errors.append(f"ролик {total:.1f} с — короче минимума {MIN_SEC:.0f} с")
     elif total > MAX_SEC:
