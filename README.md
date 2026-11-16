@@ -30,6 +30,21 @@ Claude читает исходники, разбирает речь, вырез�
 Секции не связаны кодом и ставятся по отдельности: анализ работает без
 монтажа, монтаж — без анализа.
 
+## Агент монтажа · Montage Agent
+
+Готовая студия агентов Claude Code поверх этого движка: главный агент `montage`
+(режиссёр монтажа, сам выбирает режим по материалу) и девять отделов `montaj-*`
+плюс `shot-finder`.
+
+- **Полное описание (EN):** [MONTAGE-AGENT.md](MONTAGE-AGENT.md)
+- **Агенты (EN, рабочие):** [.claude/agents/](.claude/agents/) — подхватываются, когда Claude Code открыт в папке репозитория
+- **Канон монтажа и каталог стилей (EN):** [docs/canon/playbook.md](docs/canon/playbook.md), [docs/canon/styles-catalog.md](docs/canon/styles-catalog.md)
+- **Оригиналы агентов на русском:** [docs/ru/agents/](docs/ru/agents/)
+
+*Full English guide to the montage agent — [MONTAGE-AGENT.md](MONTAGE-AGENT.md).*
+
+---
+
 ## Установка
 
 ```powershell
