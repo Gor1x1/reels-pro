@@ -44,18 +44,65 @@ export type Layer =
    */
   | { kind: "insert"; at: number; dur: number; src?: string; isVideo?: boolean; in?: number; label?: string; pip?: Pip }
   /** карточка с картинкой и подписью — приходит снизу, стоит с наклоном */
-  | { kind: "card"; at: number; dur: number; src?: string; isVideo?: boolean; title?: string; note?: string; side?: "left" | "right"; y?: number }
+  | { kind: "card"; at: number; dur: number; src?: string; isVideo?: boolean; title?: string; note?: string; side?: "left" | "right"; y?: number;
+      /* Необязательные поля серии V (09.10.2026). Без них карточка та же, что раньше. */
+      /** центр по горизонтали в долях кадра; без него — середина со сдвигом по `side` */
+      x?: number;
+      /** ширина в долях кадра; без неё 300 px макета */
+      w?: number;
+      /** наклон в градусах; без него ±3.5 по `side` */
+      tilt?: number;
+      /** цветная полоса: `top` — вид листа документа, `left` — плашка призыва; цвет — `stripColor`, иначе акцент стиля */
+      strip?: "top" | "left";
+      stripColor?: string;
+      /** серые строки-заглушки под заголовком: вид документа без выдуманного текста */
+      lines?: number;
+      /** кегль заголовка (с ним строки плотнее) и подписи */
+      titleSize?: number;
+      noteSize?: number;
+      /** цвет подписи; с ним подпись жирная, разрядкой */
+      noteColor?: string;
+      /** мягкая тень для светлого кадра вместо тяжёлой */
+      soft?: boolean;
+      /** кадров на уход, по умолчанию 6; 0 — стоит до последнего кадра (призыв до конца ролика) */
+      out?: number }
+  /** шаги 1 · 2 · 3: кружки с номерами приходят по одному, без текста шагов */
+  | { kind: "steps"; at: number; dur: number;
+      /** сколько шагов, по умолчанию 3 */
+      n?: number;
+      /** через сколько секунд приходит следующий, по умолчанию 0.3 */
+      every?: number;
+      /** центр ряда по горизонтали и верх ряда — в долях кадра */
+      x?: number;
+      y?: number;
+      /** диаметр кружка в пикселях макета, по умолчанию 56 */
+      size?: number }
   /** список пунктов, появляющихся по одному */
   | { kind: "list"; at: number; dur: number; items: { text: string; note?: string }[]; y?: number; title?: string }
   /**
    * крупная цифра со счётчиком. `plate` — тёмная подложка: без неё белая
    * цифра пропадает на белой футболке или светлой стене
    */
-  | { kind: "stat"; at: number; dur: number; to: number; from?: number; suffix?: string; label?: string; y?: number; plate?: boolean; scale?: number }
+  | { kind: "stat"; at: number; dur: number; to: number; from?: number; suffix?: string; label?: string; y?: number; plate?: boolean; scale?: number;
+      /** счёт по опорным точкам `[секунда от начала слоя, значение]`, линейно между ними — цифра попадает на слово */
+      keys?: [number, number][];
+      /** надпись над числом */
+      top?: string;
+      /** плотная подложка: итог читается на белой футболке */
+      solid?: boolean }
   /** слово, уходящее эхом вглубь — усиление без вставок */
-  | { kind: "kinetic"; at: number; dur: number; word: string; times?: number; y?: number; plate?: boolean }
+  | { kind: "kinetic"; at: number; dur: number; word: string; times?: number; y?: number; plate?: boolean;
+      /** плотная тёмная полоса и яркие строки эха — когда под словом светлый кадр */
+      solid?: boolean }
   /** сетка точек: столько-то аккаунтов. Растёт от `from` до `to` */
-  | { kind: "grid"; at: number; dur: number; from: number; to: number; label?: string; y?: number; cell?: number; cols?: number }
+  | { kind: "grid"; at: number; dur: number; from: number; to: number; label?: string; y?: number; cell?: number; cols?: number;
+      /** счёт по опорным точкам `[секунда от начала слоя, значение]` */
+      keys?: [number, number][];
+      /** тёмная подложка под сеткой — поверх говорящего в светлой одежде */
+      plate?: boolean;
+      /** надпись вместо числа и `label`, когда счёт стал больше `finalFrom` (по умолчанию — на последнем значении `to`):
+       *  «сотни» словом, без точного числа. Без `finalLabel` слой работает как раньше */
+      finalLabel?: string; finalFrom?: number }
   /** крупный титр поверх кадра */
   | { kind: "title"; at: number; dur: number; line1: string; line2?: string; y?: number };
 
@@ -114,6 +161,10 @@ const rise = (frame: number, inF = 10, px = 28) =>
 const isLight = (st: Style) => st.textOn.toLowerCase() !== "#ffffff";
 const plateBg = (st: Style) => (isLight(st) ? "rgba(255,255,255,.92)" : "rgba(8,10,11,.66)");
 const ink = (st: Style) => (isLight(st) ? st.textOn : "#fff");
+
+/** Значение по опорным точкам: линейно между соседними, за краями — крайнее. */
+const keyed = (keys: [number, number][], sec: number) =>
+  interpolate(sec, keys.map((k) => k[0]), keys.map((k) => k[1]), clamp);
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU").replace(/,/g, " ");
 
@@ -250,25 +301,33 @@ const CardLayer: React.FC<{ l: Extract<Layer, { kind: "card" }>; st: Style; font
   durF,
 }) => {
   const frame = useCurrentFrame();
-  const o = fade(frame, durF);
-  const tilt = l.side === "left" ? -3.5 : 3.5;
+  const o = l.out === 0 ? interpolate(frame, [0, 8], [0, 1], { ...clamp, easing: EASE }) : fade(frame, durF, 8, l.out ?? 6);
+  const tilt = l.tilt ?? (l.side === "left" ? -3.5 : 3.5);
   const x = (l.side === "left" ? -1 : 1) * 46;
+  const width = l.w !== undefined ? l.w * DESIGN.w : 300;
+  const stripColor = l.stripColor ?? st.accent;
   return (
     <div
       style={{
         position: "absolute",
-        left: DESIGN.w / 2 - 150 + x,
+        left: l.x !== undefined ? l.x * DESIGN.w - width / 2 : DESIGN.w / 2 - 150 + x,
         top: (l.y ?? 0.56) * DESIGN.h,
-        width: 300,
+        width,
+        boxSizing: l.w !== undefined ? "border-box" : undefined,
         opacity: o,
         transform: `translateY(${rise(frame)}px) rotate(${tilt}deg)`,
         borderRadius: 18,
         overflow: "hidden",
         background: "#fff",
-        boxShadow: "0 18px 40px rgba(0,0,0,.45)",
+        boxShadow: l.soft ? "0 10px 28px rgba(16,19,26,.24)" : "0 18px 40px rgba(0,0,0,.45)",
         padding: 8,
+        ...(l.strip === "left" ? { paddingLeft: 8 + 10 } : {}),
       }}
     >
+      {l.strip === "top" ? <div style={{ height: 10, margin: "-8px -8px 4px", background: stripColor }} /> : null}
+      {l.strip === "left" ? (
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 10, background: stripColor }} />
+      ) : null}
       {l.src ? (
         l.isVideo ? (
           <Video src={staticFile(l.src)} volume={0} style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 12 }} />
@@ -277,11 +336,113 @@ const CardLayer: React.FC<{ l: Extract<Layer, { kind: "card" }>; st: Style; font
         )
       ) : null}
       {l.title ? (
-        <div style={{ fontFamily: font, fontWeight: 900, fontSize: 25, color: "#111", padding: "10px 8px 2px" }}>{l.title}</div>
+        <div
+          style={{
+            fontFamily: font,
+            fontWeight: 900,
+            fontSize: l.titleSize ?? 25,
+            color: "#111",
+            padding: "10px 8px 2px",
+            ...(l.titleSize ? { lineHeight: 1.06 } : {}),
+          }}
+        >
+          {l.title}
+        </div>
       ) : null}
+      {l.lines
+        ? Array.from({ length: l.lines }).map((_, i) => (
+            <div
+              key={`ln${i}`}
+              style={{
+                height: 7,
+                borderRadius: 4,
+                margin: i === 0 ? "10px 8px 0" : "8px 8px 0",
+                width: `calc(${[100, 84, 58][i % 3]}% - 16px)`,
+                background: "rgba(16,19,26,.13)",
+              }}
+            />
+          ))
+        : null}
       {l.note ? (
-        <div style={{ fontFamily: font, fontSize: 19, color: "#666", padding: "0 8px 8px" }}>{l.note}</div>
+        <div
+          style={{
+            fontFamily: font,
+            fontSize: l.noteSize ?? 19,
+            color: l.noteColor ?? "#666",
+            padding: "0 8px 8px",
+            ...(l.noteColor ? { fontWeight: 900, letterSpacing: 1.5, paddingTop: 4 } : {}),
+          }}
+        >
+          {l.note}
+        </div>
+      ) : l.lines ? (
+        <div style={{ height: 10 }} />
       ) : null}
+    </div>
+  );
+};
+
+/** Шаги 1 · 2 · 3: кружок за кружком, между ними точка. Текста шагов нет — его нет и в речи. */
+const StepsLayer: React.FC<{ l: Extract<Layer, { kind: "steps" }>; st: Style; font: string; fps: number; durF: number }> = ({
+  l,
+  st,
+  font,
+  fps,
+  durF,
+}) => {
+  const frame = useCurrentFrame();
+  const o = fade(frame, durF);
+  const n = l.n ?? 3;
+  const d = l.size ?? 56;
+  const step = Math.round(fps * (l.every ?? 0.3));
+  const pop = (f: number) => ({
+    opacity: interpolate(f, [0, 6], [0, 1], { ...clamp, easing: EASE }),
+    scale: interpolate(f, [0, 9], [0.6, 1], { ...clamp, easing: EASE }),
+  });
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: (l.x ?? 0.5) * DESIGN.w,
+        top: (l.y ?? 0.5) * DESIGN.h,
+        translate: "-50% 0",
+        display: "flex",
+        alignItems: "center",
+        gap: d * 0.32,
+        opacity: o,
+      }}
+    >
+      {Array.from({ length: n }).map((_, i) => {
+        const f = frame - i * step;
+        return (
+          <React.Fragment key={i}>
+            {i > 0 ? (
+              <div style={{ width: d * 0.16, height: d * 0.16, borderRadius: d, background: st.accent, ...pop(f) }} />
+            ) : null}
+            <div
+              style={{
+                width: d,
+                height: d,
+                borderRadius: d,
+                boxSizing: "border-box",
+                background: isLight(st) ? "rgba(255,255,255,.97)" : "rgba(8,10,11,.86)",
+                border: `${Math.max(2, Math.round(d * 0.05))}px solid ${st.accent}`,
+                boxShadow: isLight(st) ? "0 6px 18px rgba(16,19,26,.22)" : "0 6px 18px rgba(0,0,0,.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: font,
+                fontWeight: 900,
+                fontSize: d * 0.5,
+                color: ink(st),
+                ...pop(f),
+              }}
+            >
+              {i + 1}
+            </div>
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 };
@@ -353,7 +514,7 @@ const StatLayer: React.FC<{ l: Extract<Layer, { kind: "stat" }>; st: Style; font
   // счётчик набирает число за две трети показа и стоит до конца — иначе
   // зритель не успевает прочитать итог
   const p = interpolate(frame, [0, durF * 0.66], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const v = (l.from ?? 0) + ((l.to ?? 0) - (l.from ?? 0)) * p;
+  const v = l.keys?.length ? keyed(l.keys, frame / fps) : (l.from ?? 0) + ((l.to ?? 0) - (l.from ?? 0)) * p;
   // масштаб — когда цифра делит полосу между лицом и субтитрами
   const k = l.scale ?? 1;
   return (
@@ -373,10 +534,15 @@ const StatLayer: React.FC<{ l: Extract<Layer, { kind: "stat" }>; st: Style; font
           display: "inline-block",
           padding: l.plate === false ? 0 : `${14 * k}px ${34 * k}px ${16 * k}px`,
           borderRadius: 26,
-          background: l.plate === false ? "transparent" : plateBg(st),
+          background: l.plate === false ? "transparent" : l.solid ? (isLight(st) ? "#fff" : "rgba(8,10,11,.94)") : plateBg(st),
           border: l.plate === false ? "none" : `1px solid ${st.accent}33`,
         }}
       >
+        {l.top ? (
+          <div style={{ fontFamily: font, fontWeight: 800, fontSize: 30 * Math.max(k, 0.85), color: st.accent, letterSpacing: 2, marginBottom: 6 * k }}>
+            {l.top}
+          </div>
+        ) : null}
         <div
           style={{
             fontFamily: font,
@@ -428,7 +594,9 @@ const KineticLayer: React.FC<{ l: Extract<Layer, { kind: "kinetic" }>; st: Style
             height: lineH * n + 36,
             background: isLight(st)
               ? "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.88) 18%, rgba(255,255,255,.88) 82%, rgba(255,255,255,0) 100%)"
-              : "linear-gradient(90deg, rgba(8,10,11,0) 0%, rgba(8,10,11,.72) 18%, rgba(8,10,11,.72) 82%, rgba(8,10,11,0) 100%)",
+              : l.solid
+                ? "rgba(8,10,11,.9)"
+                : "linear-gradient(90deg, rgba(8,10,11,0) 0%, rgba(8,10,11,.72) 18%, rgba(8,10,11,.72) 82%, rgba(8,10,11,0) 100%)",
             opacity: band,
           }}
         />
@@ -436,7 +604,7 @@ const KineticLayer: React.FC<{ l: Extract<Layer, { kind: "kinetic" }>; st: Style
       {Array.from({ length: n }).map((_, i) => {
         const f = frame - i * step;
         const o = Math.min(
-          interpolate(f, [0, 6], [0, 1 - i * 0.26], clamp),
+          interpolate(f, [0, 6], [0, 1 - i * (l.solid ? 0.1 : 0.26)], clamp),
           interpolate(frame, [durF - 6, durF], [1, 0], clamp),
         );
         return (
@@ -479,7 +647,7 @@ const GridLayer: React.FC<{ l: Extract<Layer, { kind: "grid" }>; st: Style; font
   const frame = useCurrentFrame();
   const o = fade(frame, durF);
   const p = interpolate(frame, [0, durF * 0.7], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const shown = Math.round(l.from + (l.to - l.from) * p);
+  const shown = Math.round(l.keys?.length ? keyed(l.keys, frame / fps) : l.from + (l.to - l.from) * p);
   // широкая сетка в несколько рядов, когда по высоте её зажимают лицо и субтитры
   const cols = l.cols ?? (l.to > 60 ? 10 : l.to > 24 ? 8 : 5);
   // размер клетки задаётся, когда сетка делит экран с окном говорящего
@@ -500,6 +668,17 @@ const GridLayer: React.FC<{ l: Extract<Layer, { kind: "grid" }>; st: Style; font
         gap: 14,
       }}
     >
+     <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 14,
+        padding: l.plate ? "14px 26px 10px" : 0,
+        borderRadius: 22,
+        background: l.plate ? (isLight(st) ? "rgba(255,255,255,.94)" : "rgba(8,10,11,.9)") : "transparent",
+      }}
+     >
       <div
         style={{
           display: "grid",
@@ -527,9 +706,16 @@ const GridLayer: React.FC<{ l: Extract<Layer, { kind: "grid" }>; st: Style; font
         })}
       </div>
       <div style={{ fontFamily: font, fontWeight: 900, fontSize: 40, color: ink(st) }}>
-        {fmt(shown)}
-        {l.label ? <span style={{ fontSize: 26, color: st.accent, marginLeft: 10 }}>{l.label}</span> : null}
+        {l.finalLabel && shown > (l.finalFrom ?? l.to - 1) ? (
+          <span style={{ fontSize: 34, color: st.accent }}>{l.finalLabel}</span>
+        ) : (
+          <>
+            {fmt(shown)}
+            {l.label ? <span style={{ fontSize: 26, color: st.accent, marginLeft: 10 }}>{l.label}</span> : null}
+          </>
+        )}
       </div>
+     </div>
     </div>
   );
 };
@@ -574,9 +760,11 @@ export const Talk: React.FC<{
   lang?: Lang;
   fps: number;
   durF: number;
-}> = ({ sc, styleId, lang = "hy", fps, durF }) => {
+  /** шрифт по имени из FONTS (поле спеки `font`); без него — по языку */
+  fontKey?: string;
+}> = ({ sc, styleId, lang = "hy", fps, durF, fontKey }) => {
   const st = getStyle(styleId);
-  const font = useFont(lang);
+  const font = useFont(lang, fontKey);
   const frame = useCurrentFrame();
   const layers = sc.layers ?? [];
 
@@ -721,6 +909,8 @@ export const Talk: React.FC<{
               <KineticLayer l={l} st={st} font={font} fps={fps} durF={dF} />
             ) : l.kind === "grid" ? (
               <GridLayer l={l} st={st} font={font} fps={fps} durF={dF} />
+            ) : l.kind === "steps" ? (
+              <StepsLayer l={l} st={st} font={font} fps={fps} durF={dF} />
             ) : (
               <TitleLayer l={l} st={st} font={font} durF={dF} />
             )}

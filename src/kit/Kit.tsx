@@ -15,7 +15,7 @@ import {
   continueRender,
 } from "remotion";
 import { useEffect, useState } from "react";
-import { FONT_FOR, type Lang, type Style } from "../styles";
+import { FONT_FOR, FONTS, type Lang, type Style } from "../styles";
 import {
   wordStyle,
   blockStyle,
@@ -28,10 +28,12 @@ import { captionBottom, topLine, type Platform } from "../platforms";
 export const EASE = Easing.bezier(0.16, 1, 0.3, 1);
 
 /* ---------- шрифты ---------- */
-export const useFont = (lang: Lang = "ru") => {
+/** `key` — имя из FONTS (поле спеки `font`); без него шрифт по языку, как раньше. */
+export const useFont = (lang: Lang = "ru", key?: string) => {
   const [, set] = useState(0);
+  const chosen = (key && FONTS[key]) || FONT_FOR[lang];
   useEffect(() => {
-    const { file, family, weight } = FONT_FOR[lang];
+    const { file, family, weight } = chosen;
     const h = delayRender(`font-${family}`);
     const f = new FontFace(family, `url(${staticFile(file)})`, weight ? { weight: `${weight}` } : {});
     f.load()
@@ -44,8 +46,8 @@ export const useFont = (lang: Lang = "ru") => {
         set((x) => x + 1);
         continueRender(h);
       });
-  }, [lang]);
-  return `${FONT_FOR[lang].family}, Arial Black, Arial, sans-serif`;
+  }, [chosen.file]);
+  return `${chosen.family}, Arial Black, Arial, sans-serif`;
 };
 
 /* ---------- фон: боке ---------- */
@@ -158,6 +160,8 @@ export const Captions: React.FC<{
   lift?: number;
   /** отрезки в секундах, на которых субтитры не показываются */
   hideDuring?: [number, number][];
+  /** шрифт по имени из FONTS (поле спеки `font`); без него — по языку */
+  font?: string;
 }> = ({
   blocks,
   style,
@@ -168,8 +172,9 @@ export const Captions: React.FC<{
   frameHeight = 1280,
   lift = 0,
   hideDuring,
+  font: fontKey,
 }) => {
-  const font = useFont(lang);
+  const font = useFont(lang, fontKey);
   const frame = useCurrentFrame();
   const t = frame / fps;
   const c = style.caption;

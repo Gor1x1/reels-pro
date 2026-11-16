@@ -298,3 +298,15 @@ export const FONT_FOR: Record<Lang, { file: string; family: string; weight?: num
   hy: { file: "NotoArm.ttf", family: "NotoArm", weight: 900 },
   en: { file: "Anton-Regular.ttf", family: "Anton" },
 };
+
+/**
+ * Шрифт по имени — когда спека выбирает его сама (поле `font`), а не по языку.
+ * Без поля всё как раньше: шрифт берётся из FONT_FOR по языку.
+ * Серия V (09.10.2026): для английского Anton узкий плакатный, на белой
+ * плашке субтитра ближе к образцу RL-04 Montserrat Black.
+ */
+export const FONTS: Record<string, { file: string; family: string; weight?: number }> = {
+  anton: FONT_FOR.en,
+  montserrat: FONT_FOR.ru,
+  notoarm: FONT_FOR.hy,
+};

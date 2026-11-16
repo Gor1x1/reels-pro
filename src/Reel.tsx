@@ -31,6 +31,7 @@ import {
 } from "./kit/Kit";
 import { BeforeAfter, CountUp, OfferPlate, Pointer, QuoteCard, StepBadge, type Side } from "./kit/Product";
 import { Talk, type Face, type Layer as TalkLayer } from "./talk/Talk";
+import { AiTag, type AiTagSpec } from "./kit/AiTag";
 
 /** Координаты макета. Кадр вывода задаётся в Root и может быть больше. */
 export const DESIGN = { w: 720, h: 1280 };
@@ -166,6 +167,11 @@ export type Spec = {
   /** вид анимации субтитров; не задан — берётся из стиля */
   captionAnim?: CaptionAnim;
   captionLift?: number;
+  /** ширина и кегль субтитра для этого ролика: длинные армянские слова уходят под кнопки площадки */
+  captionMaxWidth?: number;
+  captionFontSize?: number;
+  /** с какой секунды файла начинать музыку (тихое вступление) */
+  musicIn?: number;
   /** отрезки в секундах, где субтитр снят: графика на экране уже говорит то же самое */
   captionsHide?: [number, number][];
   /** основной файл для сцен speaker */
@@ -180,6 +186,13 @@ export type Spec = {
   duck?: boolean;
   sfx?: Sfx[];
   brand?: { badge?: string; badgeSrc?: string; name?: string; role?: string };
+  /**
+   * Шрифт по имени из FONTS (`montserrat`, `anton`, `notoarm`) для субтитров,
+   * слоёв `talk` и метки AI. Не задан — шрифт по языку, как раньше.
+   */
+  font?: string;
+  /** метка AI-персонажа поверх всего ролика (kit/AiTag.tsx); не задана — метки нет */
+  aiTag?: AiTagSpec;
   scenes: Scene[];
 };
 
@@ -750,7 +763,11 @@ export const Reel: React.FC<{ spec: Spec; captions: KBlock[] }> = ({ spec, capti
           иначе они рвутся на склейках */}
       <Captions
         blocks={captions}
-        style={st}
+        style={
+          spec.captionMaxWidth || spec.captionFontSize
+            ? { ...st, caption: { ...st.caption, maxWidth: spec.captionMaxWidth ?? st.caption.maxWidth, fontSize: spec.captionFontSize ?? st.caption.fontSize } }
+            : st
+        }
         lang={lang}
         fps={fps}
         anim={spec.captionAnim}
@@ -758,7 +775,11 @@ export const Reel: React.FC<{ spec: Spec; captions: KBlock[] }> = ({ spec, capti
         frameHeight={DESIGN.h}
         lift={spec.captionLift ?? st.caption.lift}
         hideDuring={hidden}
+        font={spec.font}
       />
+      {spec.aiTag ? (
+        <AiTag tag={spec.aiTag} style={st} lang={lang} fontKey={spec.font} fps={fps} total={totalFrames(spec)} />
+      ) : null}
       <Badge
         style={st}
         text={spec.brand?.badge}
@@ -771,6 +792,7 @@ export const Reel: React.FC<{ spec: Spec; captions: KBlock[] }> = ({ spec, capti
       {spec.music ? (
         <Audio
           src={staticFile(spec.music)}
+          trimBefore={spec.musicIn ? Math.round(spec.musicIn * fps) : undefined}
           volume={musicVolume(captions, spec.musicVolume ?? 0.07, spec.duck ?? true, fps)}
           loop
         />
@@ -799,7 +821,7 @@ const SceneBody: React.FC<{ spec: Spec; sc: Scene; fps: number }> = ({ spec, sc,
       ) : sc.type === "speaker" ? (
         <Speaker spec={spec} sc={sc} fps={fps} />
       ) : sc.type === "talk" ? (
-        <Talk sc={sc} styleId={spec.style} lang={lang} fps={fps} durF={sceneFrames(sc, fps)} />
+        <Talk sc={sc} styleId={spec.style} lang={lang} fps={fps} durF={sceneFrames(sc, fps)} fontKey={spec.font} />
       ) : sc.type === "broll" ? (
         <Broll spec={spec} sc={sc} fps={fps} />
       ) : sc.type === "compare" ? (
